@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { forwardRef, useEffect } from 'react';
-import { Link, useNavigate, NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 // material-ui
@@ -41,16 +41,24 @@ const NavItem = ({ item, level }) => {
     }
 
     let listItemProps = {
-        component: forwardRef((props, ref) => <NavLink ref={ref} {...props} to={item.url} target={itemTarget} />)
+        component: forwardRef((props, ref) => <button ref={ref} {...props} />)
     };
 
     if (item?.external) {
         listItemProps = { component: 'a', href: item.url, target: itemTarget };
+    } else {
+        listItemProps = {
+            onClick: (event) => {
+                event.preventDefault();
+                itemHandler(item.id);
+            }
+        };
     }
 
     const itemHandler = (id) => {
         dispatch({ type: MENU_OPEN, id });
-        if (matchesSM) dispatch({ type: SET_MENU, opened: false });
+        if (matchesSM) dispatch({ type: SET_MENU, opened: true });
+        navigate(item.url); // Navigating to the specified url using useNavigate hook
     };
 
     // active menu item on page load

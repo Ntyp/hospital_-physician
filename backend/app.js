@@ -146,34 +146,23 @@ app.post("/create-tracking", jsonParser, (req, res) => {
     }
   );
 
-  // สร้างกลุ่มสินค้าที่ส่งไป
-  connection.query(
-    "INSERT INTO group_product (track_id,group_sender,group_status,date_at,user_id) VALUES (?,?,?,?,?)",
-    [id, sender, "จัดส่งอุปกรณ์และเครื่องมือ", date, user_id],
-    function (err, results) {
-      if (err) {
-        res.json({ status: "error", message: err });
+  // Loop ค่าของสินค้าที่ส่งไปบันทึก
+  for (let i = 0; i < count; i++) {
+    let name = items[i].name;
+    let quantity = items[i].quantity;
+    connection.query(
+      "INSERT INTO product (product_name,product_count,track_id) VALUES (?,?,?)",
+      [name, quantity, id],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
         return;
       }
-      // Loop ค่าของสินค้าที่ส่งไปบันทึก
-      for (let i = 0; i < count; i++) {
-        let name = items[i].name;
-        let quantity = items[i].quantity;
-        connection.query(
-          "INSERT INTO product (product_name,product_count,track_id) VALUES (?,?,?)",
-          [name, quantity, id],
-          function (err, results) {
-            if (err) {
-              res.json({ status: "error", message: err });
-              return;
-            }
-            return;
-          }
-        );
-      }
-      res.json({ status: "ok" });
-    }
-  );
+    );
+  }
+  res.json({ status: "ok" });
 });
 
 // อัปเดตสถานะอุปกรณ์และนัดวันรับสินค้า
@@ -247,15 +236,26 @@ app.get("/documents/:id", jsonParser, (req, res) => {
 
 // สร้างคำร้องเบิกเงิน
 app.post("/document", jsonParser, (req, res) => {
-  const name = req.body.name;
-  const topic = req.body.topic;
-  const detail = req.body.detail;
+  const title = req.body.title;
+  const description = req.body.description;
   const file = req.body.file;
-  const user_id = req.body.user_id;
-  const time = moment().format("YYYY-MM-DD hh:mm:ss");
+  const version = 1;
+  const status = "ดำเนินการ";
+  const hospital = req.body.hospital;
+  const created_at = moment().format("YYYY-MM-DD hh:mm:ss");
+  const created_by = req.body.user_id;
   connection.query(
-    "INSERT INTO documents (document_topic,document_detail,document_file,document_owner,document_version,document_status,user_id,created_at) VALUES (?,?,?,?,?,?,?,?)",
-    [topic, detail, file, name, 1, "ยื่นคำร้อง", user_id, time],
+    "INSERT INTO document (document_title,document_description,document_file,document_version,document_status,hospital_name,created_at,created_by) VALUES (?,?,?,?,?,?,?,?)",
+    [
+      title,
+      description,
+      file,
+      version,
+      status,
+      hospital,
+      created_at,
+      created_by,
+    ],
     function (err, results) {
       if (err) {
         res.json({ status: "error", message: err });
@@ -266,7 +266,51 @@ app.post("/document", jsonParser, (req, res) => {
   );
 });
 
+// // สร้างคำร้องเบิกเงิน
+// app.post("/document", jsonParser, (req, res) => {
+//   const name = req.body.name;
+//   const topic = req.body.topic;
+//   const detail = req.body.detail;
+//   const file = req.body.file;
+//   const user_id = req.body.user_id;
+//   const time = moment().format("YYYY-MM-DD hh:mm:ss");
+//   connection.query(
+//     "INSERT INTO documents (document_topic,document_detail,document_file,document_owner,document_version,document_status,user_id,created_at) VALUES (?,?,?,?,?,?,?,?)",
+//     [topic, detail, file, name, 1, "ยื่นคำร้อง", user_id, time],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok" });
+//     }
+//   );
+// });
+
 // แก้ไขคำร้อง
+app.put("/document/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]];
+  const topic = req.body.topic;
+  const detail = req.body.detail;
+  const file = req.body.file;
+  const version = req.body.version;
+
+  // เราต้องการ Version ของ form
+
+  // Reset สถานะทุกๆอันก่อนหน้าที่จะไม่ผ่าน
+
+  // connection.query(
+  //   "DELETE FROM documents WHERE document_id = ?",
+  //   [topic, detail, file,id],
+  //   function (err, results) {
+  //     if (err) {
+  //       res.json({ status: "error", message: err });
+  //       return;
+  //     }
+  //     res.json({ status: "ok" });
+  //   }
+  // );
+});
 
 // ลบคำร้อง
 app.delete("/document/:id", jsonParser, (req, res) => {
@@ -283,6 +327,7 @@ app.delete("/document/:id", jsonParser, (req, res) => {
     }
   );
 });
+
 app.listen(port, () => {
   console.log(`Running on port: ${port}`);
 });

@@ -49,7 +49,7 @@ let pages = {
     type: 'group',
     children: []
 };
-if (role === 'sterilization') {
+if (role === 'hospital staff') {
     pages.children = [
         {
             id: 'home',
@@ -60,60 +60,20 @@ if (role === 'sterilization') {
             target: true
         },
         {
-            id: 'sterilization',
-            title: 'รายงานผลการปฏิบัติงาน',
-            type: 'collapse',
-            icon: icons.IconFlask,
-            children: [
-                {
-                    id: 'waiting-for-check',
-                    title: 'รอการตรวจสอบ',
-                    type: 'item',
-                    url: '/waiting-for-check',
-                    target: true
-                },
-                {
-                    id: 'waiting-for-sterilization',
-                    title: 'รอการฆ่าเชื้อ',
-                    type: 'item',
-                    url: '/waiting-for-sterilization',
-                    target: true
-                },
-                {
-                    id: 'sterilization-completed',
-                    title: 'ฆ่าเชื้อเสร็จสิ้น',
-                    type: 'item',
-                    url: '/sterilization-completed',
-                    target: true
-                }
-            ]
-        }
-    ];
-} else if (role === 'hospital staff') {
-    pages.children = [
-        {
-            id: 'home',
-            title: 'หน้าหลัก',
+            id: 'tracking',
+            title: 'การนำส่งอุปกรณ์',
             type: 'item',
-            url: '/home',
-            icon: icons.IconHome,
+            url: '/tracking',
+            icon: icons.IconBoxSeam,
             target: true
         },
         {
             id: 'documents',
             title: 'การนำส่งเอกสาร',
-            type: 'collapse',
+            type: 'item',
+            url: '/documents',
             icon: icons.IconFileImport,
-            children: [
-                {
-                    id: 'documents',
-                    title: 'การนำส่งเอกสาร',
-                    type: 'item',
-                    icon: icons.IconFileText,
-                    url: '/documents',
-                    target: true
-                }
-            ]
+            target: true
         }
     ];
 } else if (role === 'officer' || role === 'assistant' || role === 'director') {
@@ -154,33 +114,6 @@ if (role === 'sterilization') {
                     type: 'item',
                     icon: icons.IconFileX,
                     url: '/report-documents-disapproved',
-                    target: true
-                }
-            ]
-        }
-    ];
-} else if (role === 'product inspector') {
-    pages.children = [
-        {
-            id: 'home',
-            title: 'หน้าหลัก',
-            type: 'item',
-            url: '/home',
-            icon: icons.IconHome,
-            target: true
-        },
-        {
-            id: 'tracking',
-            title: 'การนำส่งอุปกรณ์',
-            type: 'collapse',
-            icon: icons.IconCar,
-            children: [
-                {
-                    id: 'tracking-status',
-                    title: 'นำส่งอุปกรณ์',
-                    type: 'item',
-                    icon: icons.IconBoxSeam,
-                    url: '/tracking',
                     target: true
                 }
             ]
