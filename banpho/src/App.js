@@ -1,20 +1,32 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./components/routes/Login";
-import Register from "./components/routes/Register";
-import Home from "./components/routes/Home";
+import { useSelector } from 'react-redux';
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/'>
-          <Route path='Login' element={<Login />} />
-          <Route path='Register' element={<Register />} />
-          <Route path='Home' element={<Home />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
-}
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline, StyledEngineProvider } from '@mui/material';
+
+// routing
+import Routes from 'routes';
+
+// defaultTheme
+import themes from 'themes';
+
+// project imports
+import NavigationScroll from 'layout/NavigationScroll';
+
+// ==============================|| APP ||============================== //
+
+const App = () => {
+    const customization = useSelector((state) => state.customization);
+
+    return (
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={themes(customization)}>
+                <CssBaseline />
+                <NavigationScroll>
+                    <Routes />
+                </NavigationScroll>
+            </ThemeProvider>
+        </StyledEngineProvider>
+    );
+};
 
 export default App;
