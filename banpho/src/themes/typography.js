@@ -5,7 +5,7 @@
 
 export default function themeTypography(theme) {
     return {
-        fontFamily: `'Roboto', sans-serif`,
+        fontFamily: `'Kanit', sans-serif`,
         h6: {
             fontWeight: 500,
             color: theme.heading,

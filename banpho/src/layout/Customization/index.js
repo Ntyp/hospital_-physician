@@ -55,36 +55,12 @@ const Customization = () => {
         dispatch({ type: SET_BORDER_RADIUS, borderRadius });
     }, [dispatch, borderRadius]);
 
-    let initialFont = 'Roboto';
-    // switch (customization.fontFamily) {
-    //     case `'Inter', sans-serif`:
-    //         initialFont = 'Inter';
-    //         break;
-    //     case `'Poppins', sans-serif`:
-    //         initialFont = 'Poppins';
-    //         break;
-    //     case `'Roboto', sans-serif`:
-    //     default:
-    //         initialFont = 'Roboto';
-    //         break;
-    // }
+    let initialFont = 'Kanit';
 
     // state - font family
     const [fontFamily, setFontFamily] = useState(initialFont);
     useEffect(() => {
-        let newFont = `'Roboto', sans-serif`;
-        // switch (fontFamily) {
-        //     case 'Inter':
-        //         newFont = `'Inter', sans-serif`;
-        //         break;
-        //     case 'Poppins':
-        //         newFont = `'Poppins', sans-serif`;
-        //         break;
-        //     case 'Roboto':
-        //     default:
-        //         newFont = `'Roboto', sans-serif`;
-        //         break;
-        // }
+        let newFont = `'Kanit', sans-serif`;
         dispatch({ type: SET_FONT_FAMILY, fontFamily: newFont });
     }, [dispatch, fontFamily]);
 
