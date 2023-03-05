@@ -48,9 +48,9 @@ const Tracking = () => {
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
-        // console.log(JSON.parse(userData));
-        setUser(JSON.parse(userData));
-        getData(JSON.parse(userData));
+        const storage = JSON.parse(userData);
+        setUser(storage);
+        getData(storage);
     }, []);
 
     function getData(value) {
@@ -77,6 +77,7 @@ const Tracking = () => {
     // ปุ่มดวงตาสำหรับดูรายละเอียดแต่ละอัน
     const handleCheck = (row) => {
         const track = row.track;
+        console.log('🚀 ~ file: Tracking.js:80 ~ handleCheck ~ track:', track);
         axios
             .get(`http://localhost:7000/tracking-data/${track}`)
             .then((response) => {
@@ -92,7 +93,6 @@ const Tracking = () => {
             .then((response) => {
                 console.log('item', response.data.data);
                 setShowItem(response.data.data);
-                // setHistory(response.data.data[0]);
             })
             .catch((error) => {
                 console.error(error);
@@ -175,6 +175,7 @@ const Tracking = () => {
                 sender: user.user_firstname + ' ' + user.user_lastname,
                 date: moment().format('YYYY-MM-DD'),
                 user_id: user.user_id,
+                hospital: user.hospital_id,
                 place: user.user_place
             })
             .then(function (response) {
@@ -215,8 +216,13 @@ const Tracking = () => {
         setEquipment((prevEquipment) => prevEquipment.filter((item, index) => index !== key));
     };
 
+    // const randomTrack = () => {
+    //     var track = `BPTH` + Math.floor(Math.random() * 90000);
+    //     setTrack(track);
+    // };
+
     const randomTrack = () => {
-        var track = `BPTH` + Math.floor(Math.random() * 90000);
+        var track = `BPTH-${user.hospital_id}${moment().format('YYYYMMDDHHmmss')}`;
         setTrack(track);
     };
 
@@ -306,7 +312,7 @@ const Tracking = () => {
                 </Paper>
                 <Dialog open={open} onClose={handleClose}>
                     <DialogTitle>
-                        <Typography variant="h3" sx={{ fontWeight: 500 }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center' }}>
                             แบบฟอร์มอุปกรณ์การแพทย์
                         </Typography>
                     </DialogTitle>
@@ -320,9 +326,6 @@ const Tracking = () => {
                         </Stepper>
                         {activeStep === 0 && (
                             <form onSubmit={handleSubmit}>
-                                {/* <Typography variant="h5" sx={{ fontWeight: 500, marginBottom: '20px' }}>
-                                    TRACK:{track}
-                                </Typography> */}
                                 <TextField
                                     margin="dense"
                                     id="name"
@@ -331,6 +334,7 @@ const Tracking = () => {
                                     type="text"
                                     fullWidth
                                     variant="outlined"
+                                    sx={{ marginTop: '20px', marginBottom: '10px' }}
                                 />
                                 <TextField
                                     margin="dense"
@@ -342,7 +346,7 @@ const Tracking = () => {
                                     variant="outlined"
                                 />
                                 <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button type="submit">เพิ่มรายการ</Button>
+                                    <Button type="submit">เพิ่มอุปกรณ์ +</Button>
                                 </Box>
                                 {equipment.length > 0 ? (
                                     <>
@@ -353,7 +357,6 @@ const Tracking = () => {
                                             {equipment.map((item, key) => (
                                                 <li key={key}>
                                                     {item.name} จำนวน: {item.quantity}
-                                                    {/* <button onClick={() => handleDeleteEquipment(key)}>ลบ</button> */}
                                                     <IconButton onClick={() => handleDeleteEquipment(key)} color="error" size="small">
                                                         <DeleteIcon />
                                                     </IconButton>
@@ -393,7 +396,6 @@ const Tracking = () => {
                     </DialogContent>
                 </Dialog>
 
-                {/* Dialog Check */}
                 <Dialog
                     open={openCheck}
                     fullWidth={true}
@@ -403,25 +405,23 @@ const Tracking = () => {
                     aria-describedby="alert-dialog-description"
                 >
                     <DialogTitle id="alert-dialog-title">
-                        <Typography variant="h2">ประวัติการส่งอุปกรณ์การแพทย์</Typography>
+                        <h3 style={{ fontSize: '25px' }}>ประวัติการส่ง</h3>
                         <hr />
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            <Typography variant="h4">ชื่อผู้ส่ง:{history.tracking_sender}</Typography>
-                            <Typography variant="h4">หมายเลข: {history.group_id}</Typography>
-                            <Typography variant="h4">วันที่ส่ง: {moment(history.date_at).format('YYYY-MM-DD')}</Typography>
-                            <Typography variant="h4">
-                                อุปกรณ์ที่ส่ง:
-                                <ol>
-                                    {showItem.map((item, key) => (
-                                        <li key={key}>
-                                            {item.product_name} จำนวน: {item.product_count}
-                                        </li>
-                                    ))}
-                                </ol>
-                            </Typography>
-                            <Typography variant="h4">สถานะ: {history.tracking_status}</Typography>
+                            <p>ชื่อผู้ส่ง:{history.tracking_sender}</p>
+                            <p>หมายเลข: {history.group_id}</p>
+                            <p>วันที่ส่ง: {moment(history.date_at).format('YYYY-MM-DD')}</p>
+                            <p>อุปกรณ์ที่ส่ง:</p>
+                            <ol>
+                                {showItem.map((item, key) => (
+                                    <li key={key}>
+                                        {item.equipment_name} จำนวน: {item.equipment_quantity}
+                                    </li>
+                                ))}
+                            </ol>
+                            <p>สถานะ: {history.tracking_status}</p>
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>

@@ -1,32 +1,17 @@
-import { lazy } from 'react';
-
-// project imports
 import MainLayout from 'layout/MainLayout';
-import Loadable from 'ui-component/Loadable';
-// import Report from '../views/pages/product';
-
-// dashboard routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
-
-const Product = Loadable(lazy(() => import('views/pages/product/Product')));
-const ProductForm = Loadable(lazy(() => import('views/pages/product/ProductFrom')));
-
-const Tracking = Loadable(lazy(() => import('views/pages/tracking/Tracking')));
-const TrackingForm = Loadable(lazy(() => import('views/pages/tracking/TrackingForm')));
-
-const Users = Loadable(lazy(() => import('views/pages/users/Users')));
-const AddUser = Loadable(lazy(() => import('views/pages/users/AddUser')));
-const EditUser = Loadable(lazy(() => import('views/pages/users/EditUser')));
-
-const Documents = Loadable(lazy(() => import('views/pages/documents/Documents')));
-
-const DocumentsWaiting = Loadable(lazy(() => import('views/pages/documents/DocumentsWaiting')));
-const DocumentsApprove = Loadable(lazy(() => import('views/pages/documents/DocumentsApprove')));
-const DocumentsDisapprove = Loadable(lazy(() => import('views/pages/documents/DocumentsDisapprove')));
-
-const WaitingCheck = Loadable(lazy(() => import('views/pages/sterilization/WaitingCheck')));
-const WaitingSterilization = Loadable(lazy(() => import('views/pages/sterilization/WaitingSterilization')));
-const SterilizationFinish = Loadable(lazy(() => import('views/pages/sterilization/SterilizationFinish.js')));
+import DashboardDefault from 'views/dashboard/Default';
+import Product from 'views/pages/product/Product';
+import ProductForm from 'views/pages/product/ProductFrom';
+import Tracking from 'views/pages/tracking/Tracking';
+import TrackingForm from 'views/pages/tracking/TrackingForm';
+import Users from 'views/pages/users/Users';
+import AddUser from 'views/pages/users/AddUser';
+import EditUser from 'views/pages/users/EditUser';
+import Documents from 'views/pages/documents/Documents';
+import DocumentsDashboard from 'views/pages/documents/DocumentsDashboard';
+import DocumentsWaiting from 'views/pages/documents/DocumentsWaiting';
+import DocumentsApprove from 'views/pages/documents/DocumentsApprove';
+import DocumentsDisapprove from 'views/pages/documents/DocumentsDisapprove';
 
 const MainRoutes = {
     path: '/',
@@ -57,6 +42,10 @@ const MainRoutes = {
             element: <Documents />
         },
         {
+            path: '/dashboard-documents',
+            element: <DocumentsDashboard />
+        },
+        {
             path: '/report-documents',
             element: <DocumentsWaiting />
         },
@@ -67,18 +56,6 @@ const MainRoutes = {
         {
             path: '/report-documents-disapproved',
             element: <DocumentsDisapprove />
-        },
-        {
-            path: '/waiting-for-check',
-            element: <WaitingCheck />
-        },
-        {
-            path: '/waiting-for-sterilization',
-            element: <WaitingSterilization />
-        },
-        {
-            path: '/sterilization-completed',
-            element: <SterilizationFinish />
         }
     ]
 };

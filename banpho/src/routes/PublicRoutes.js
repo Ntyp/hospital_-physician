@@ -1,15 +1,8 @@
-import { lazy } from 'react';
-
-// project imports
 import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
-
-// login option 3 routing
-const Qrcode = Loadable(lazy(() => import('views/pages/public-link/TrackingQrcode')));
-const TrackingForm = Loadable(lazy(() => import('views/pages/public-link/TrackingForm')));
-const SuccessForm = Loadable(lazy(() => import('views/pages/public-link/SuccessUpdate')));
-
-// ==============================|| AUTHENTICATION ROUTING ||============================== //
+import Qrcode from 'views/pages/public-link/TrackingQrcode';
+import TrackingForm from 'views/pages/public-link/TrackingForm';
+import SuccessForm from 'views/pages/public-link/SuccessUpdate';
 
 const PublicRoutes = {
     path: '/',

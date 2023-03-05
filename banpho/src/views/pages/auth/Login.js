@@ -11,11 +11,18 @@ import {
     Grid,
     Typography,
     createTheme,
-    ThemeProvider
+    ThemeProvider,
+    makeStyles
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import logo from '../../../assets/images/logo.png';
+import background from '../../../assets/images/login-background.jpg';
+
+const styles = {
+    fontFamily: 'Kanit, sans-serif'
+};
 
 const theme = createTheme();
 
@@ -43,7 +50,7 @@ const Login = () => {
             });
     };
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider styles={styles}>
             <Grid container component="main" sx={{ height: '100vh' }}>
                 <CssBaseline />
                 <Grid
@@ -52,7 +59,7 @@ const Login = () => {
                     sm={4}
                     md={7}
                     sx={{
-                        backgroundImage: 'url(https://source.unsplash.com/random)',
+                        backgroundImage: `url(${background})`,
                         backgroundRepeat: 'no-repeat',
                         backgroundColor: (t) => (t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900]),
                         backgroundSize: 'cover',
@@ -69,51 +76,48 @@ const Login = () => {
                             alignItems: 'center'
                         }}
                     >
-                        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                            <LockOutlinedIcon />
-                        </Avatar>
-                        <Typography component="h1" variant="h5">
-                            Sign in
+                        <img src={logo} alt="logoLogin" style={{ width: 200, marginBottom: 20 }} />
+                        <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px' }}>
+                            ระบบสนับสนุนการปฏิบัติงาน <br /> สำนักงานสาธารณสุขอำเภอบ้านโพธิ์ จังหวัดฉะเชิงเทรา
                         </Typography>
                         <Box noValidate sx={{ mt: 1 }}>
-                            {/* <form onSubmit={handleLogin}>
-                                <TextField margin="normal" required fullWidth label="Username" type="text" id="username" name="username" />
-                                <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    label="Password"
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                />
-                                <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-                                    Sign In
-                                </Button>
-                            </form> */}
                             <form onSubmit={handleLogin}>
                                 <TextField
                                     margin="dense"
                                     id="username"
                                     name="username"
-                                    label="Username"
+                                    label="ชื่อสมาชิก"
                                     type="text"
                                     fullWidth
                                     variant="outlined"
                                     required
+                                    sx={{ mt: 1, mb: 2 }}
                                 />
                                 <TextField
                                     margin="dense"
                                     id="password"
                                     name="password"
-                                    label="Password"
+                                    label="รหัสผ่าน"
                                     type="password"
                                     fullWidth
                                     variant="outlined"
                                     required
+                                    sx={{ mt: 2, mb: 2 }}
                                 />
-                                <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-                                    Sign In
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    variant="contained"
+                                    sx={{
+                                        mt: 3,
+                                        mb: 2,
+                                        backgroundColor: '#357a38',
+                                        '&:hover': {
+                                            backgroundColor: theme.palette.success.main
+                                        }
+                                    }}
+                                >
+                                    เข้าสู่ระบบ
                                 </Button>
                             </form>
                         </Box>

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import moment from 'moment/moment';
+import axios from 'axios';
 import {
     TextField,
     Card,
@@ -21,47 +23,64 @@ import {
     IconButton
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-// import DeleteIcon from '@material-ui/icons/Delete';
 
 const DocumentsApprove = () => {
+    const [user, setUser] = useState();
+    const [rows, setRows] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
     const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        const userData = localStorage.getItem('user_data');
+        console.log(JSON.parse(userData));
+        setUser(JSON.parse(userData));
+        getData(JSON.parse(userData));
+    }, []);
+
+    function getData(value) {
+        const id = value.hospital_id;
+        const getrole = value.user_role;
+        console.log('getrole', getrole);
+        let role = 0;
+
+        if (getrole === 'director hospital') {
+            role = 1;
+        } else if (getrole === 'officer') {
+            role = 2;
+        } else if (getrole === 'assistant') {
+            role = 3;
+        } else if (getrole === 'director') {
+            role = 4;
+        }
+
+        axios
+            .get(`http://localhost:7000/documents-approve/${id}/${role}`)
+            .then((response) => {
+                const value = response.data.data;
+                setRows(
+                    value.map((item, index) =>
+                        createData(index + 1, item.created_at, item.document_title, item.created_by, item.approval_comments)
+                    )
+                );
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
 
     const columns = [
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
         { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
         { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
         { id: 'reporter', label: 'ผู้รายงาน', minWidth: 100 },
-        { id: 'detail', label: 'หมายเหตุ', minWidth: 100 },
-        { id: 'status', label: 'สถานะ', minWidth: 100 },
-        {
-            id: 'check',
-            label: 'ตรวจสอบ',
-            minWidth: 50,
-            render: (row) => (
-                <IconButton aria-label="delete" onClick={() => handleDelete(row)}>
-                    <VisibilityRoundedIcon />
-                </IconButton>
-            )
-        }
+        { id: 'detail', label: 'หมายเหตุ', minWidth: 100 }
     ];
 
-    function handleDelete(row) {
-        // Handle delete action for the row
+    function createData(order, date, topic, reporter, detail) {
+        const formattedDate = moment(date).format('YYYY-MM-DD');
+        return { order, date: formattedDate, topic, reporter, detail };
     }
-
-    function createData(order, date, topic, reporter, detail, status) {
-        return { order, date, topic, reporter, detail, status };
-    }
-
-    const rows = [
-        createData('1', '2023-08-13', 'การเบิกเงิน', 'นายโชคดี มีชัย เจ้าหน้าที่รพ.สต.', 'เบิกเงินซื้อพัดลมครับ', 'อนุมัติแล้ว'),
-        createData('2', '2023-08-13', 'การเบิกเงิน', 'นายโชคดี มีชัย เจ้าหน้าที่รพ.สต.', 'เบิกเงินซื้อพัดลมครับ', 'อนุมัติแล้ว'),
-        createData('3', '2023-08-13', 'การเบิกเงิน', 'นายโชคดี มีชัย เจ้าหน้าที่รพ.สต.', 'เบิกเงินซื้อพัดลมครับ', 'อนุมัติแล้ว'),
-        createData('4', '2023-08-13', 'การเบิกเงิน', 'นายโชคดี มีชัย เจ้าหน้าที่รพ.สต.', 'เบิกเงินซื้อพัดลมครับ', 'อนุมัติแล้ว')
-    ];
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);

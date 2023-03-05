@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import moment from 'moment/moment';
 import {
     TextField,
     Card,
@@ -27,11 +29,62 @@ import UnpublishedRoundedIcon from '@mui/icons-material/UnpublishedRounded';
 // import DeleteIcon from '@material-ui/icons/Delete';
 
 const DocumentsWaiting = () => {
+    const [user, setUser] = useState();
+    const [document, setDocument] = useState([]);
+    const [rows, setRows] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
     const [open, setOpen] = useState(false);
     const [openApprove, setOpenApprove] = useState(false);
     const [openDisapprove, setOpenDisapprove] = useState(false);
+
+    useEffect(() => {
+        const userData = localStorage.getItem('user_data');
+        console.log(JSON.parse(userData));
+        setUser(JSON.parse(userData));
+        getData(JSON.parse(userData));
+    }, []);
+
+    function getData(value) {
+        const id = value.hospital_id;
+        const getrole = value.user_role;
+        console.log('getrole', getrole);
+        let role = 0;
+
+        if (getrole === 'director hospital') {
+            role = 1;
+        } else if (getrole === 'officer') {
+            role = 2;
+        } else if (getrole === 'assistant') {
+            role = 3;
+        } else if (getrole === 'director') {
+            role = 4;
+        }
+        console.log(`http://localhost:7000/documents/${id}/${role}`);
+
+        axios
+            .get(`http://localhost:7000/documents-status/${id}/${role}`)
+            .then((response) => {
+                console.log(response.data.data);
+                const value = response.data.data;
+                setRows(
+                    value.map((item, index) =>
+                        createData(
+                            index + 1,
+                            item.created_at,
+                            item.document_title,
+                            item.document_file,
+                            item.created_by,
+                            item.document_description
+                        )
+                    )
+                );
+                // Rest of the code
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
 
     const columns = [
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
@@ -55,39 +108,27 @@ const DocumentsWaiting = () => {
                 </>
             )
         }
-        // {
-        //     id: 'check',
-        //     label: 'ตรวจสอบ',
-        //     minWidth: 50,
-        //     render: (row) => (
-        //         <IconButton aria-label="delete" onClick={() => handleDelete(row)}>
-        //             <VisibilityRoundedIcon />
-        //         </IconButton>
-        //     )
-        // }
     ];
-
-    function handleDelete(row) {
-        // Handle delete action for the row
-    }
-
-    function handleApprove(row) {
-        // Handle delete action for the row
-    }
 
     function handleDisapprove(row) {
         // Handle delete action for the row
     }
 
-    function createData(order, date, topic, document, reporter, detail, status) {
-        return { order, date, topic, document, reporter, detail, status };
+    function createData(order, date, topic, document, reporter, detail) {
+        const formattedDate = moment(date).format('YYYY-MM-DD');
+        return { order, date: formattedDate, topic, document, reporter, detail };
     }
 
-    const handleClickOpenApprove = () => {
+    const handleClickOpenApprove = (row) => {
+        console.log(row);
+        console.log(user);
+        setDocument(row);
         setOpenApprove(true);
     };
 
-    const handleCloseApprove = () => {
+    const handleCloseApprove = (row) => {
+        console.log(row);
+        setDocument([]);
         setOpenApprove(false);
     };
 
@@ -98,45 +139,6 @@ const DocumentsWaiting = () => {
     const handleCloseDisapprove = () => {
         setOpenDisapprove(false);
     };
-
-    const rows = [
-        createData(
-            '1',
-            '2023-08-13',
-            'การเบิกเงิน',
-            'เอกสารเบิกเงิน.pdf',
-            'นายโชคดี มีชัย เจ้าหน้าที่รพ.สต.',
-            'เบิกเงินซื้อพัดลมครับ',
-            'อนุมัติแล้ว'
-        ),
-        createData(
-            '2',
-            '2023-08-13',
-            'การเบิกเงิน',
-            'เอกสารเบิกเงิน.pdf',
-            'นายโชคดี มีชัย เจ้าหน้าที่รพ.สต.',
-            'เบิกเงินซื้อพัดลมครับ',
-            'อนุมัติแล้ว'
-        ),
-        createData(
-            '3',
-            '2023-08-13',
-            'การเบิกเงิน',
-            'เอกสารเบิกเงิน.pdf',
-            'นายโชคดี มีชัย เจ้าหน้าที่รพ.สต.',
-            'เบิกเงินซื้อพัดลมครับ',
-            'อนุมัติแล้ว'
-        ),
-        createData(
-            '4',
-            '2023-08-13',
-            'การเบิกเงิน',
-            'เอกสารเบิกเงิน.pdf',
-            'นายโชคดี มีชัย เจ้าหน้าที่รพ.สต.',
-            'เบิกเงินซื้อพัดลมครับ',
-            'อนุมัติแล้ว'
-        )
-    ];
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -160,6 +162,46 @@ const DocumentsWaiting = () => {
 
     const handleClose = () => {
         setOpen(false);
+    };
+
+    const handleApprove = (event) => {
+        event.preventDefault(); // prevent form submission
+        const comment = event.target.elements.comment.value;
+        console.log(comment);
+        console.log(document);
+        // const id =
+
+        // axios
+        //     .post(`http://localhost:7000/approve/${id}`, {
+        //         role: user.role_status,
+        //         comment: comment,
+        //         hospital: user.hospital_id
+        //     })
+        //     .then(function (response) {
+        //         const value = response.data;
+        //         if (value.status == 'ok') {
+        //             console.log('update status success');
+        //         }
+        //     })
+        //     .catch(function (error) {
+        //         console.log(error);
+        //     });
+
+        // axios
+        //     .post(`http://localhost:7000/approve/${id}`, {
+        //         role: user.role_status,
+        //         comment: comment,
+        //         hospital: user.hospital_id
+        //     })
+        //     .then((response) => {
+        //         const value = response.data;
+        //         if (value.status == 'ok') {
+        //
+        //         }
+        //     })
+        //     .catch((error) => {
+        //         console.error(error);
+        //     });
     };
 
     const handleSubmit = (event) => {};
@@ -226,31 +268,32 @@ const DocumentsWaiting = () => {
                 {/* Approve */}
                 <Dialog open={openApprove} fullWidth={true} maxWidth={'sm'} onClose={handleCloseApprove}>
                     <DialogTitle>
-                        <Typography variant="h3" sx={{ fontWeight: 500, color: 'green', textAlign: 'center' }}>
-                            อนุมัติเอกสาร
-                        </Typography>
+                        <h2 style={{ fontWeight: 500, color: 'green', textAlign: 'center' }}>อนุมัติเอกสาร</h2>
                     </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
-                        <TextField
-                            margin="dense"
-                            id="name"
-                            label="กรอกรายละเอียดเพิ่มเติม"
-                            type="text"
-                            multiline
-                            rows={4}
-                            fullWidth
-                            variant="outlined"
-                        />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseApprove}>ยกเลิก</Button>
-                        <Button onClick={handleCloseApprove}>ยืนยัน</Button>
-                    </DialogActions>
+                    <form onSubmit={handleApprove}>
+                        <DialogContent>
+                            <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
+                            <TextField
+                                margin="dense"
+                                id="comment"
+                                name="comment"
+                                label="กรอกรายละเอียดเพิ่มเติม"
+                                type="text"
+                                multiline
+                                rows={4}
+                                fullWidth
+                                variant="outlined"
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCloseApprove}>ยกเลิก</Button>
+                            <Button type="submit">ยืนยัน</Button>
+                        </DialogActions>
+                    </form>
                 </Dialog>
 
                 {/* Disapprove */}
-                <Dialog open={openDisapprove} fullWidth={true} maxWidth={'sm'} onClose={handleCloseDisapprove}>
+                <Dialog open={openDisapprove} fullWidth={true} maxWidth={'sm'}>
                     <DialogTitle>
                         <Typography variant="h3" sx={{ fontWeight: 500, color: 'red', textAlign: 'center' }}>
                             ไม่อนุมัติเอกสาร
@@ -258,20 +301,20 @@ const DocumentsWaiting = () => {
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
-                        <TextField
+                        {/* <TextField
                             margin="dense"
-                            id="name"
+                            id="comment"
                             label="กรอกรายละเอียดเพิ่มเติม"
                             type="text"
                             multiline
                             rows={4}
                             fullWidth
                             variant="outlined"
-                        />
+                        /> */}
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleCloseDisapprove}>ยกเลิก</Button>
-                        <Button onClick={handleCloseDisapprove}>ยืนยัน</Button>
+                        <Button onClick={handleApprove}>ยืนยัน</Button>
                     </DialogActions>
                 </Dialog>
             </Card>

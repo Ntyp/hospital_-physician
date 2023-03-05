@@ -38,6 +38,9 @@ const Documents = () => {
     const [value, setValue] = useState([]);
     const [equipment, setEquipment] = useState([]);
     const [user, setUser] = useState([]);
+    const [history, setHistory] = useState([]);
+    const [openCheck, setOpenCheck] = useState(false);
+    const [openDelete, setOpenDelete] = useState(false);
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -46,33 +49,23 @@ const Documents = () => {
         getData(JSON.parse(userData));
     }, []);
 
-    //     createData(
-    //         '1',
-    //         '2023-08-13',
-    //         'การเบิกเงิน',
-    //         'เอกสารเบิกเงิน.pdf',
-    //         'โชคดี มีชัย เจ้าหน้าที่รพ.สต',
-    //         'เบิกเงินซื้อพัดลม',
-    //         'รอตรวจสอบ'
-    //     ),
-
     function getData(value) {
-        const id = value.user_id;
+        const id = value.hospital_id;
         axios
             .get(`http://localhost:7000/documents/${id}`)
             .then((response) => {
                 console.log(response.data.data);
-                const value = response.data.data;
+                let value = response.data.data;
                 setRows(
                     value.map((item, index) =>
                         createData(
                             index + 1,
                             item.created_at,
-                            item.document_topic,
+                            item.document_title,
                             item.document_detail,
                             item.document_file,
-                            item.document_owner,
-                            item.group_id,
+                            item.created_by,
+                            item.document_description,
                             item.document_status
                         )
                     )
@@ -85,26 +78,63 @@ const Documents = () => {
 
     // Define steps for the stepper
     const steps = ['ขั้นตอนที่ 1', 'ขั้นตอนที่ 2'];
-    const handleCheck = (row) => {
-        setHistory(row);
-        console.log('row =>', row);
-        setOpenCheck(true);
-    };
 
     const handleDeleteEquipment = (row) => {
         // setHistory(row);
         console.log('row =>', row);
-        // setOpenCheck(true);
     };
+
+    // const columns = [
+    //     { id: 'order', label: 'ลำดับที่', minWidth: 100 },
+    //     { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
+    //     { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
+    //     { id: 'detail', label: 'รายละเอียด', minWidth: 100 },
+    //     { id: 'documents', label: 'เอกสาร', minWidth: 100 },
+    //     { id: 'reporter', label: 'ผู้รายงาน', minWidth: 100 },
+    //     { id: 'description', label: 'ข้อเสนอแนะ', minWidth: 100 },
+    //     { id: 'status', label: 'สถานะ', minWidth: 100 },
+    //     {
+    //         id: 'mange',
+    //         label: 'การจัดการ',
+    //         minWidth: 50,
+    //         render: (row) => (
+    //             <>
+    //                 <IconButton aria-label="check" onClick={() => handleCheck(row)}>
+    //                     <VisibilityRoundedIcon />
+    //                 </IconButton>
+    //                 <IconButton aria-label="delete" color="error" size="small" onClick={() => handleDeleteEquipment(row)}>
+    //                     <DeleteIcon />
+    //                 </IconButton>
+    //             </>
+    //         )
+    //     }
+    // ];
 
     const columns = [
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
         { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
         { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
+        { id: 'detail', label: 'รายละเอียด', minWidth: 100 },
         { id: 'documents', label: 'เอกสาร', minWidth: 100 },
         { id: 'reporter', label: 'ผู้รายงาน', minWidth: 100 },
-        { id: 'detail', label: 'รายละเอียด', minWidth: 100 },
-        { id: 'status', label: 'สถานะ', minWidth: 100 },
+        { id: 'description', label: 'ข้อเสนอแนะ', minWidth: 100 },
+        {
+            id: 'status',
+            label: 'สถานะ',
+            minWidth: 100,
+            render: (row) => {
+                switch (row.status) {
+                    case 0:
+                        return 'กำลังดำเนินการ';
+                    case 1:
+                        return 'อนุมัติ';
+                    case 2:
+                        return 'ไม่อนุมัติ';
+                    default:
+                        return '';
+                }
+            }
+        },
         {
             id: 'mange',
             label: 'การจัดการ',
@@ -122,9 +152,9 @@ const Documents = () => {
         }
     ];
 
-    function createData(order, date, topic, documents, reporter, detail, status) {
+    function createData(order, date, topic, detail, documents, reporter, description, status) {
         const formattedDate = moment(date).format('YYYY-MM-DD');
-        return { order, date: formattedDate, topic, documents, reporter, detail, status };
+        return { order, date: formattedDate, topic, detail, documents, reporter, description, status };
     }
 
     const handleSubmit = (event) => {
@@ -216,11 +246,22 @@ const Documents = () => {
 
     const handleSaveForm = () => {
         console.log('save');
+        console.log(value);
         setOpen(false);
         setActiveStep(0);
         setValue([]);
-        // setEquipment([]);
     };
+
+    const handleCheck = (row) => {
+        setHistory(row);
+        console.log('row =>', row);
+        setOpenCheck(true);
+    };
+
+    const handleCloseCheck = () => {
+        setOpenCheck(false);
+    };
+
     return (
         <div>
             <Card sx={{ minWidth: 275, minHeight: 625 }}>
@@ -298,9 +339,6 @@ const Documents = () => {
                         </Stepper>
                         {activeStep === 0 && (
                             <form onSubmit={handleSubmit}>
-                                {/* <Typography variant="h5" sx={{ fontWeight: 500, marginBottom: '20px' }}>
-                                    TRACK:{track}
-                                </Typography> */}
                                 <TextField
                                     margin="dense"
                                     id="name"
@@ -367,16 +405,13 @@ const Documents = () => {
                                 <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
                                     รายการทั้งหมด
                                 </Typography>
-                                <ul>
-                                    {value.map((item, key) => (
-                                        <li key={key}>
-                                            {/* {item.name} จำนวน: {item.detail} */}
-                                            <p>ชื่อหัวข้อ:{item.name} </p>
-                                            <p>รายละเอียด:{item.detail} </p>
-                                            <p>อัพโหลดไฟล์:{item.file} </p>
-                                        </li>
-                                    ))}
-                                </ul>
+                                {value.map((item, key) => (
+                                    <div key={key}>
+                                        <p>ชื่อหัวข้อ: {item.name}</p>
+                                        <p>รายละเอียด: {item.detail}</p>
+                                        <p>อัพโหลดไฟล์: {item.file}</p>
+                                    </div>
+                                ))}
                                 <DialogActions>
                                     <Button onClick={handleBack}>ย้อนกลับ</Button>
                                     <Button onClick={handleSaveForm}>ยืนยัน</Button>
@@ -384,6 +419,25 @@ const Documents = () => {
                             </>
                         )}
                     </DialogContent>
+                </Dialog>
+
+                <Dialog
+                    open={openCheck}
+                    onClose={handleCloseCheck}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-description">
+                            Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps
+                            are running.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseCheck}>Disagree</Button>
+                        <Button onClick={handleCloseCheck}>Agree</Button>
+                    </DialogActions>
                 </Dialog>
             </Card>
         </div>

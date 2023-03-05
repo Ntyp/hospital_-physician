@@ -30,29 +30,6 @@ app.get("/users", jsonParser, (req, res) => {
   });
 });
 
-// สมัครสมาชิก
-app.post("/register", jsonParser, (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
-  const firstname = req.body.firstname;
-  const lastname = req.body.lastname;
-  const position = req.body.position;
-  const role = req.body.role;
-  const place = req.body.place;
-
-  connection.query(
-    "INSERT INTO users (user_username,user_password,user_firstname,user_lastname,user_position,user_role,user_place) VALUES (?,?,?,?,?,?,?)",
-    [username, password, firstname, lastname, position, role, place],
-    function (err, results) {
-      if (err) {
-        res.json({ status: "error", message: err });
-        return;
-      }
-      res.json({ status: "ok" });
-    }
-  );
-});
-
 // ล็อกอิน
 app.post("/login", jsonParser, (req, res) => {
   const username = req.body.username;
@@ -105,12 +82,12 @@ app.get("/tracking-data/:id", jsonParser, (req, res) => {
   );
 });
 
-// นำ item ในกลุ่ม track
+// เช็คอุปกรณ์ที่อยู่ใน group
 app.get("/tracking-item/:id", jsonParser, (req, res) => {
   const id = [req.params["id"]];
 
   connection.query(
-    "SELECT * FROM product WHERE track_id = ?",
+    "SELECT * FROM equipment WHERE group_id = ?",
     [id],
     function (err, results) {
       if (err) {
@@ -126,17 +103,26 @@ app.get("/tracking-item/:id", jsonParser, (req, res) => {
 app.post("/create-tracking", jsonParser, (req, res) => {
   const id = req.body.id; // trackid
   const items = req.body.items; // สินค้าที่ส่งไป
-  const count = req.body.count; // จำนวน
+  const quantity = req.body.count; // จำนวน
   const sender = req.body.sender; // ชื่อผู้ส่ง
   const place = req.body.place; //โรงพยาบาลสต.ที่ส่งมา
   const date = req.body.date; // วันที่ส่ง
   const user_id = req.body.user_id; // ไอดีผู้ที่ทำ
+  const hospital_id = req.body.hospital; // ไอดีโรงพยาบาล
   const updated_at = moment().format("YYYY-MM-DD HH:mm:ss"); // อัปเดตวันที่กระทำล่าสุด
 
   // เพิ่มข้อมูลเข้า tracking
   connection.query(
-    "INSERT INTO tracking (group_id,tracking_hospital,tracking_sender,date_at,tracking_status,user_id) VALUES (?,?,?,?,?,?)",
-    [id, place, sender, date, "จัดส่งอุปกรณ์และเครื่องมือ", user_id],
+    "INSERT INTO tracking (group_id,tracking_hospital,tracking_sender,date_at,tracking_status,user_id,hospital_id) VALUES (?,?,?,?,?,?,?)",
+    [
+      id,
+      place,
+      sender,
+      date,
+      "จัดส่งอุปกรณ์และเครื่องมือ",
+      user_id,
+      hospital_id,
+    ],
     function (err, results) {
       if (err) {
         res.json({ status: "error", message: err });
@@ -147,11 +133,11 @@ app.post("/create-tracking", jsonParser, (req, res) => {
   );
 
   // Loop ค่าของสินค้าที่ส่งไปบันทึก
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < quantity; i++) {
     let name = items[i].name;
     let quantity = items[i].quantity;
     connection.query(
-      "INSERT INTO product (product_name,product_count,track_id) VALUES (?,?,?)",
+      "INSERT INTO equipment (equipment_name,equipment_quantity,group_id) VALUES (?,?,?)",
       [name, quantity, id],
       function (err, results) {
         if (err) {
@@ -217,13 +203,85 @@ app.put("/trackingfinish/:id", jsonParser, (req, res) => {
   );
 });
 
-// คำร้องเบิกเงิน
-app.get("/documents/:id", jsonParser, (req, res) => {
-  const id = [req.params["id"]];
+// ==============================================
+// ============== ระบบ Document ==================
+// ==============================================
+
+// สร้างคำร้อง
+// app.post("/document-disapprove", jsonParser, (req, res) => {
+//   const title = req.body.title;
+//   const detail = req.body.detail;
+//   const file = req.body.file;
+//   const version = 1;
+//   const status = "ดำเนินการ";
+//   const hospital = req.body.hospital;
+//   const created_at = moment().format("YYYY-MM-DD hh:mm:ss");
+//   const created_by = req.body.user_id;
+//   connection.query(
+//     "INSERT INTO document (document_title,document_description,document_file,document_version,document_status,hospital_name,created_at,created_by) VALUES (?,?,?,?,?,?,?,?)",
+//     [
+//       title,
+//       description,
+//       file,
+//       version,
+//       status,
+//       hospital,
+//       created_at,
+//       created_by,
+//     ],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok" });
+//     }
+//   );
+// });
+
+// สร้างคำร้อง
+app.post("/document", jsonParser, (req, res) => {
+  const title = req.body.title;
+  const detail = req.body.detail;
+  const file = req.body.file;
+  const version = 1;
+  const status = "ดำเนินการ";
+  const hospital = req.body.hospital;
+  const created_at = moment().format("YYYY-MM-DD hh:mm:ss");
+  const created_by = req.body.user_id;
+  const description = req.body.description;
 
   connection.query(
-    "SELECT * FROM documents WHERE user_id = ?",
-    [id],
+    "INSERT INTO document (document_title,document_detail,document_file,document_version,document_status,created_at,hospital_id,created_by,document_description) VALUES (?,?,?,?,?,?,?,?,?)",
+    [
+      title,
+      detail,
+      file,
+      version,
+      status,
+      created_at,
+      hospital,
+      created_by,
+      description,
+    ],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok" });
+    }
+  );
+});
+
+// คำร้องเบิกเงินของแต่ละโรงพยาบาล
+// หน้าคำร้องทั้งหมดของเจ้าหน้าที่โรงพยาบาล
+app.get("/documents/:id", jsonParser, (req, res) => {
+  const hospital_id = [req.params["id"]]; // hospital id
+
+  connection.query(
+    "SELECT * FROM document WHERE hospital_id = ?",
+    [hospital_id],
     function (err, results) {
       if (err) {
         res.json({ status: "error", message: err });
@@ -234,8 +292,417 @@ app.get("/documents/:id", jsonParser, (req, res) => {
   );
 });
 
-// สร้างคำร้องเบิกเงิน
-app.post("/document", jsonParser, (req, res) => {
+// เช็ครายละเอียดคำร้องเบิกเงินของแต่ละโรงพยาบาล
+// ดูรายละเอียด
+app.get("/document-detail/:id", jsonParser, (req, res) => {
+  const document_id = [req.params["id"]]; // hospital id
+
+  connection.query(
+    "SELECT * FROM document WHERE document_id = ?",
+    [document_id],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok", data: results });
+    }
+  );
+});
+
+// เช็คสถานะของแต่ละตำแหน่งผู้อนุมัติ
+// localhost:7000/documents-status/10/2
+// #10 คือ hospital_id 2 คือ role_id
+app.get("/documents-status/:id/:status", jsonParser, (req, res) => {
+  const hospital_id = [req.params["id"]];
+  const status = req.params["status"];
+
+  if (hospital_id != 17) {
+    connection.query(
+      "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
+      [hospital_id, status],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  } else {
+    connection.query(
+      "SELECT * FROM document WHERE document_status = ?",
+      [status],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  }
+});
+
+// สถานะที่รออนุมัติ
+app.get("/documents-waiting/:id/:status", jsonParser, (req, res) => {
+  const hospital_id = [req.params["id"]];
+
+  // ไม่ใช่สาธารณสุข
+  if (hospital_id != 17) {
+  } else {
+  }
+  const status = req.params["status"];
+
+  if (hospital_id != 17) {
+  }
+  connection.query(
+    "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
+    [hospital_id, status],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok", data: results });
+    }
+  );
+});
+
+// ประวัติการอนุมัติ
+// app.get("/documents-approve/:id/:status", jsonParser, (req, res) => {
+//   const hospital_id = [req.params["id"]];
+//   const status = req.params["status"];
+//   const status_approve = "อนุมัติ";
+
+//   // ไม่ใช่สาธารณสุข
+//   if (hospital_id != 17) {
+//     connection.query(
+//       "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
+//       [hospital_id, status],
+//       function (err, results) {
+//         if (err) {
+//           res.json({ status: "error", message: err });
+//           return;
+//         }
+//         res.json({ status: "ok", data: results });
+//       }
+//     );
+//   } else {
+//     connection.query(
+//       "SELECT * FROM document WHERE approve_" + status + "= ? ",
+//       [status_approve],
+//       function (err, results) {
+//         if (err) {
+//           res.json({ status: "error", message: err });
+//           return;
+//         }
+//         res.json({ status: "ok", data: results });
+//       }
+//     );
+//   }
+// });
+
+app.get("/documents-approve/:id/:status", jsonParser, (req, res) => {
+  const hospital_id = [req.params["id"]];
+  const approval_status = req.params["status"]; // role ของคนที่จะเช็ค
+  const status_approve = "อนุมัติ";
+
+  if (hospital_id != 17) {
+    connection.query(
+      "SELECT * FROM document INNER JOIN approval ON document.document_id = approval.document_id WHERE hospital_id = ? AND document_status = ?",
+      [hospital_id, status],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  } else {
+    connection.query(
+      "SELECT * FROM document INNER JOIN approval ON document.document_id = approval.document_id WHERE approve_" +
+        approval_status +
+        "= ? ",
+      [status_approve],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  }
+});
+
+// ประวัติการอนุมัติ
+// app.get("/documents-disapprove/:id/:status", jsonParser, (req, res) => {
+//   const hospital_id = [req.params["id"]];
+//   const status = req.params["status"];
+//   const status_disapprove = 2;
+
+//   // ไม่ใช่สาธารณสุข
+//   if (hospital_id != 17) {
+//     connection.query(
+//       "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
+//       [hospital_id, status],
+//       function (err, results) {
+//         if (err) {
+//           res.json({ status: "error", message: err });
+//           return;
+//         }
+//         res.json({ status: "ok", data: results });
+//       }
+//     );
+//   } else {
+//     connection.query(
+//       "SELECT * FROM document WHERE approve_" + status + "= ? ",
+//       [status_disapprove],
+//       function (err, results) {
+//         if (err) {
+//           res.json({ status: "error", message: err });
+//           return;
+//         }
+//         res.json({ status: "ok", data: results });
+//       }
+//     );
+//   }
+// });
+
+// ประวัติการอนุมัติ
+// approver_id ,approval_status
+app.get("/documents-disapprove/:id/:status", jsonParser, (req, res) => {
+  const hospital_id = [req.params["id"]];
+  const approval_status = req.params["status"]; // role ของคนที่จะเช็ค
+  const status_disapprove = "ไม่อนุมัติ";
+
+  if (hospital_id != 17) {
+    connection.query(
+      "SELECT * FROM document INNER JOIN approval ON document.document_id = approval.document_id WHERE hospital_id = ? AND document_status = ?",
+      [hospital_id, status],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  } else {
+    connection.query(
+      "SELECT * FROM document INNER JOIN approval ON document.document_id = approval.document_id WHERE approve_" +
+        approval_status +
+        "= ? ",
+      [status_disapprove],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  }
+});
+
+//   connection.query(
+//     "SELECT * FROM document WHERE approve_" + status + "= ? ",
+//     [status_disapprove],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok", data: results });
+//     }
+//   );
+
+// ไม่ใช่สาธารณสุข
+// if (hospital_id != 17) {
+//   connection.query(
+//     "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
+//     [hospital_id, status],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok", data: results });
+//     }
+//   );
+// } else {
+//   connection.query(
+//     "SELECT * FROM document WHERE approve_" + status + "= ? ",
+//     [status_disapprove],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok", data: results });
+//     }
+//   );
+// }
+
+// สถานะอนุมัติของแต่ละโรงพยาบาล
+// app.get("/documents-approve/:id", jsonParser, (req, res) => {
+//   const hospital_id = [req.params["id"]];
+//   const approve_status = 1;
+
+//   connection.query(
+//     "SELECT * FROM document WHERE hospital_id = ?",
+//     [hospital_id],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok", data: results });
+//     }
+//   );
+// });
+
+// สถานะไม่อนุมัติของโรงพยาบาล
+// app.get("/documents-disapprove/:id", jsonParser, (req, res) => {
+//   const hospital_id = [req.params["id"]];
+//   const disapprove_status = 2;
+
+//   connection.query(
+//     "SELECT * FROM document WHERE hospital_id = ?",
+//     [hospital_id],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok", data: results });
+//     }
+//   );
+// });
+
+// สถานะรอการอนุมัติของแต่ละ role
+// app.get("/pending/:id", jsonParser, (req, res) => {
+//   const hospital_id = [req.params["id"]]; //hospital_id
+//   const pending_status = 0;
+
+//   connection.query(
+//     "SELECT * FROM document WHERE document_status = ? AND hospital_id = ?",
+//     [pending_status, hospital_id],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok", data: results });
+//     }
+//   );
+// });
+
+// สถานะอนุมัติของของแต่ละ role
+// app.get("/approve/:id", jsonParser, (req, res) => {
+//   const role = [req.params["id"]];
+//   const approve_status = 1;
+
+//   connection.query(
+//     "SELECT * FROM document WHERE document_status = ?",
+//     [approve_status],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok", data: results });
+//     }
+//   );
+// });
+
+// อนุมัติเอกสาร
+// app.post("/approve", jsonParser, (req, res) => {
+//   const id = req.body.id;
+//   const role = req.body.role;
+//   const status = 1;
+//   const comment = req.body.comment;
+
+//   connection.query(
+//     "INSERT INTO approval (document_id,approver_id,approval_status,approval_comments) VALUES (?,?,?,?)",
+//     [id, role, status, comment],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok" });
+//     }
+//   );
+// });
+
+// อนุมัติเอกสาร
+// id = id เอกสาร
+app.post("/approve/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]];
+  const getrole = req.body.role;
+  const comment = req.body.comment;
+  const hospital = req.body.hospital;
+  let role;
+
+  if (getrole === "hospital director") {
+    role = 1;
+  } else if (getrole === "officer") {
+    role = 2;
+  } else if (getrole === "assistant") {
+    role = 3;
+  } else if (getrole === "director") {
+    role = 4;
+  }
+
+  let status = 1;
+
+  connection.query(
+    "INSERT INTO approval (document_id,approver_id,approval_status,approval_comments,hospital) VALUES (?,?,?,?,?)",
+    [id, role, status, comment, hospital],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      connection.query(
+        "UPDATE document SET document_status = ?, approve_" +
+          role +
+          " = ?, updated_by = ? WHERE document_id = ?",
+        [role, role, role, id],
+        function (err, results) {
+          if (err) {
+            res.json({ status: "error", message: err });
+            return;
+          }
+          res.json({ status: "ok" });
+        }
+      );
+    }
+  );
+});
+
+// สถานะเอกสารที่ไม่อนุมัติของแต่ละ role
+// app.get("/disapprove/:id", jsonParser, (req, res) => {
+//   const disapprove_status = 2;
+
+//   connection.query(
+//     "SELECT * FROM document WHERE document_status = ?",
+//     [disapprove_status],
+//     function (err, results) {
+//       if (err) {
+//         res.json({ status: "error", message: err });
+//         return;
+//       }
+//       res.json({ status: "ok", data: results });
+//     }
+//   );
+// });
+
+// สร้างคำร้อง
+app.post("/document-disapprove", jsonParser, (req, res) => {
   const title = req.body.title;
   const description = req.body.description;
   const file = req.body.file;
@@ -265,27 +732,6 @@ app.post("/document", jsonParser, (req, res) => {
     }
   );
 });
-
-// // สร้างคำร้องเบิกเงิน
-// app.post("/document", jsonParser, (req, res) => {
-//   const name = req.body.name;
-//   const topic = req.body.topic;
-//   const detail = req.body.detail;
-//   const file = req.body.file;
-//   const user_id = req.body.user_id;
-//   const time = moment().format("YYYY-MM-DD hh:mm:ss");
-//   connection.query(
-//     "INSERT INTO documents (document_topic,document_detail,document_file,document_owner,document_version,document_status,user_id,created_at) VALUES (?,?,?,?,?,?,?,?)",
-//     [topic, detail, file, name, 1, "ยื่นคำร้อง", user_id, time],
-//     function (err, results) {
-//       if (err) {
-//         res.json({ status: "error", message: err });
-//         return;
-//       }
-//       res.json({ status: "ok" });
-//     }
-//   );
-// });
 
 // แก้ไขคำร้อง
 app.put("/document/:id", jsonParser, (req, res) => {
@@ -317,6 +763,96 @@ app.delete("/document/:id", jsonParser, (req, res) => {
   const id = [req.params["id"]];
   connection.query(
     "DELETE FROM documents WHERE document_id = ?",
+    [id],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok" });
+    }
+  );
+});
+
+// สร้างผู้ใช้งาน
+app.post("/user", jsonParser, (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  const firstname = req.body.firstname;
+  const lastname = req.body.lastname;
+  const position = req.body.position;
+  const role = req.body.role;
+  const place = req.body.place;
+  const hospital = req.body.hospital;
+
+  connection.query(
+    "INSERT INTO users (user_username,user_password,user_firstname,user_lastname,user_position,user_role,user_place,hospital_id) VALUES (?,?,?,?,?,?,?,?)",
+    [username, password, firstname, lastname, position, role, place, hospital],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok" });
+    }
+  );
+});
+
+// อัปเดตผู้ใช้งาน
+app.put("/user", jsonParser, (req, res) => {});
+
+// ลบผู้ใช้งาน
+app.delete("/users/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]];
+  connection.query(
+    "DELETE FROM users WHERE user_id = ?",
+    [id],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok" });
+    }
+  );
+});
+
+// ดูโรงพยาบาลทั้งหมด
+app.get("/hopital", jsonParser, (req, res) => {
+  connection.query("SELECT * FROM hospital", function (err, results) {
+    if (err) {
+      res.json({ status: "error", message: err });
+      return;
+    }
+    res.json({ status: "ok" });
+  });
+});
+
+// สร้างโรงพยาบาล
+app.post("/hopital", jsonParser, (req, res) => {
+  const hospital_name = req.body.hospital;
+
+  connection.query(
+    "INSERT INTO hospital (hospital_name) VALUES (?)",
+    [hospital_name],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok" });
+    }
+  );
+});
+
+// อัปเดตข้อมูลโรงพยาบาล
+app.put("/hopital", jsonParser, (req, res) => {});
+
+// ลบโรงพยาบาล
+app.delete("/hospital/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]];
+  connection.query(
+    "DELETE FROM hospital WHERE hospital_id = ?",
     [id],
     function (err, results) {
       if (err) {

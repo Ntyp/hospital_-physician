@@ -76,13 +76,13 @@ if (role === 'hospital staff') {
             target: true
         }
     ];
-} else if (role === 'officer' || role === 'assistant' || role === 'director') {
+} else if (role === 'officer' || role === 'assistant' || role === 'director' || role === 'director hospital') {
     pages.children = [
         {
             id: 'home',
             title: 'หน้าหลัก',
             type: 'item',
-            url: '/home',
+            url: '/dashboard-documents',
             icon: icons.IconHome,
             target: true
         },
