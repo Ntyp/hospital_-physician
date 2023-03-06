@@ -40,19 +40,7 @@ const DocumentsDisapprove = () => {
 
     function getData(value) {
         const id = value.hospital_id;
-        const getrole = value.user_role;
-        console.log('getrole', getrole);
-        let role = 0;
-
-        if (getrole === 'director hospital') {
-            role = 1;
-        } else if (getrole === 'officer') {
-            role = 2;
-        } else if (getrole === 'assistant') {
-            role = 3;
-        } else if (getrole === 'director') {
-            role = 4;
-        }
+        const role = value.role_status;
 
         axios
             .get(`http://localhost:7000/documents-disapprove/${id}/${role}`)
@@ -124,13 +112,13 @@ const DocumentsDisapprove = () => {
                         padding: '30px'
                     }}
                 >
-                    <Button
+                    {/* <Button
                         variant="contained"
                         onClick={handleClickOpen}
                         sx={{ float: 'left', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
                     >
                         Export
-                    </Button>
+                    </Button> */}
                     <TableContainer>
                         <Table>
                             <TableHead>

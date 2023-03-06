@@ -44,36 +44,56 @@ if (userData && userData !== 'undefined') {
 const role = user?.user_role;
 let pages = {
     id: 'pages',
-    title: 'Pages',
-    caption: 'Pages Caption',
+    title: 'หน้าเพจ',
+    caption: '',
     type: 'group',
     children: []
 };
 if (role === 'hospital staff') {
     pages.children = [
         {
-            id: 'home',
-            title: 'หน้าหลัก',
-            type: 'item',
-            url: '/home',
-            icon: icons.IconHome,
-            target: true
-        },
-        {
             id: 'tracking',
             title: 'การนำส่งอุปกรณ์',
-            type: 'item',
-            url: '/tracking',
+            type: 'collapse',
             icon: icons.IconBoxSeam,
-            target: true
+            children: [
+                {
+                    id: 'dashboard-tracking',
+                    title: 'Dashboard',
+                    type: 'item',
+                    url: '/dashboard-tracking',
+                    target: true
+                },
+                {
+                    id: 'tracking',
+                    title: 'การนำส่งอุปกรณ์',
+                    type: 'item',
+                    url: '/tracking',
+                    target: true
+                }
+            ]
         },
         {
             id: 'documents',
             title: 'การนำส่งเอกสาร',
-            type: 'item',
-            url: '/documents',
+            type: 'collapse',
             icon: icons.IconFileImport,
-            target: true
+            children: [
+                {
+                    id: 'dashboard-document',
+                    title: 'Dashboard',
+                    type: 'item',
+                    url: '/dashboard-document',
+                    target: true
+                },
+                {
+                    id: 'documents',
+                    title: 'การนำส่งเอกสาร',
+                    type: 'item',
+                    url: '/documents',
+                    target: true
+                }
+            ]
         }
     ];
 } else if (role === 'officer' || role === 'assistant' || role === 'director' || role === 'director hospital') {
@@ -124,6 +144,22 @@ if (role === 'hospital staff') {
         {
             id: 'users',
             title: 'สมาชิก',
+            type: 'collapse',
+            icon: icons.IconUsers,
+            children: [
+                {
+                    id: 'user-edit',
+                    title: 'จัดการสมาชิก',
+                    type: 'item',
+                    icon: icons.IconUserExclamation,
+                    url: '/users',
+                    target: true
+                }
+            ]
+        },
+        {
+            id: 'hospital',
+            title: 'โรงพยาบาล',
             type: 'collapse',
             icon: icons.IconUsers,
             children: [

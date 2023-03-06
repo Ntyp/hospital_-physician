@@ -4,7 +4,7 @@ import { Grid, Typography, Box, Button } from '@mui/material';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PrintIcon from '@mui/icons-material/Print';
-import { style } from '@mui/system';
+import logo from '../../../assets/images/logo.png';
 
 const TrackingQrcode = () => {
     const [url, setUrl] = useState(null);
@@ -32,24 +32,18 @@ const TrackingQrcode = () => {
     return (
         <div>
             <Grid sx={{ textAlign: 'center' }}>
-                <Typography variant="h1" sx={{ marginBottom: '20px', marginTop: '20px' }}>
-                    {params}
-                </Typography>
-                <Typography variant="h2" sx={{ marginBottom: '20px' }}>
-                    {value.tracking_hospital}
-                </Typography>
+                <img src={logo} alt="logo" style={{ width: 200, marginBottom: 20 }} />
+                <p style={{ fontSize: '26px' }}>{params}</p>
+                <p style={{ fontSize: '26px' }}>{value.tracking_hospital}</p>
                 <QRCodeSVG
                     value={`http://localhost:3000/tracking-link?track=${params}`}
-                    size={400}
+                    size={350}
                     bgColor={'#ffffff'}
                     fgColor={'#000000'}
                     level={'L'}
                     includeMargin={false}
                 />
-                <Typography variant="h2" sx={{ marginTop: '30px', marginBottom: '20px' }}>
-                    โปรดแสกน QR CODE นี้เพื่ออัปเดตสถานะอุปกรณ์
-                </Typography>
-
+                <p style={{ fontSize: '26px', marginTop: '30px', marginBottom: '20px' }}>โปรดแสกน QR CODE นี้เพื่ออัปเดตสถานะ</p>
                 <Box>
                     <Button
                         variant="contained"

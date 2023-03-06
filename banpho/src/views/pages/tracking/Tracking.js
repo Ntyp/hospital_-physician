@@ -410,18 +410,18 @@ const Tracking = () => {
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            <p>ชื่อผู้ส่ง:{history.tracking_sender}</p>
-                            <p>หมายเลข: {history.group_id}</p>
-                            <p>วันที่ส่ง: {moment(history.date_at).format('YYYY-MM-DD')}</p>
-                            <p>อุปกรณ์ที่ส่ง:</p>
+                            <p style={{ fontSize: '18px' }}>ชื่อผู้ส่ง:{history.tracking_sender}</p>
+                            <p style={{ fontSize: '18px' }}>หมายเลข: {history.group_id}</p>
+                            <p style={{ fontSize: '18px' }}>วันที่ส่ง: {moment(history.date_at).format('YYYY-MM-DD')}</p>
+                            <p style={{ fontSize: '18px' }}>อุปกรณ์ที่ส่ง:</p>
                             <ol>
                                 {showItem.map((item, key) => (
-                                    <li key={key}>
+                                    <li style={{ fontSize: '18px' }} key={key}>
                                         {item.equipment_name} จำนวน: {item.equipment_quantity}
                                     </li>
                                 ))}
                             </ol>
-                            <p>สถานะ: {history.tracking_status}</p>
+                            <p style={{ fontSize: '18px' }}>สถานะ: {history.tracking_status}</p>
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>

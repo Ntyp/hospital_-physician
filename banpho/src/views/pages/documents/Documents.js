@@ -23,7 +23,9 @@ import {
     IconButton,
     Stepper,
     Step,
-    StepLabel
+    StepLabel,
+    StepContent,
+    Grid
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
@@ -41,6 +43,7 @@ const Documents = () => {
     const [history, setHistory] = useState([]);
     const [openCheck, setOpenCheck] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
+    const [track, setTrack] = useState(null);
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -61,6 +64,7 @@ const Documents = () => {
                         createData(
                             index + 1,
                             item.created_at,
+                            item.document_code,
                             item.document_title,
                             item.document_detail,
                             item.document_file,
@@ -78,41 +82,51 @@ const Documents = () => {
 
     // Define steps for the stepper
     const steps = ['ขั้นตอนที่ 1', 'ขั้นตอนที่ 2'];
+    const [activeStepDoc, setActiveStepDoc] = useState(0);
+
+    const stepsDocuments = [
+        {
+            label: 'ผู้อำนวยการโรงพยาบาล',
+            description: ''
+        },
+        {
+            label: 'เจ้าหน้าที่สาธารณสุข',
+            description: ''
+        },
+        {
+            label: 'ผู้ช่วยสาธารณสุข',
+            description: ``
+        },
+        {
+            label: 'สาธารณสุขอำเภอบ้านโพธิ์',
+            description: ``
+        },
+        {
+            label: 'เสร็จสิ้น'
+        }
+    ];
+
+    const handleNextDoc = () => {
+        setActiveStepDoc((prevActiveStep) => prevActiveStep + 1);
+    };
+
+    const handleBacktDoc = () => {
+        setActiveStepDoc((prevActiveStep) => prevActiveStep - 1);
+    };
+
+    const handleResetDoc = () => {
+        setActiveStepDoc(0);
+    };
 
     const handleDeleteEquipment = (row) => {
         // setHistory(row);
         console.log('row =>', row);
     };
 
-    // const columns = [
-    //     { id: 'order', label: 'ลำดับที่', minWidth: 100 },
-    //     { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
-    //     { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
-    //     { id: 'detail', label: 'รายละเอียด', minWidth: 100 },
-    //     { id: 'documents', label: 'เอกสาร', minWidth: 100 },
-    //     { id: 'reporter', label: 'ผู้รายงาน', minWidth: 100 },
-    //     { id: 'description', label: 'ข้อเสนอแนะ', minWidth: 100 },
-    //     { id: 'status', label: 'สถานะ', minWidth: 100 },
-    //     {
-    //         id: 'mange',
-    //         label: 'การจัดการ',
-    //         minWidth: 50,
-    //         render: (row) => (
-    //             <>
-    //                 <IconButton aria-label="check" onClick={() => handleCheck(row)}>
-    //                     <VisibilityRoundedIcon />
-    //                 </IconButton>
-    //                 <IconButton aria-label="delete" color="error" size="small" onClick={() => handleDeleteEquipment(row)}>
-    //                     <DeleteIcon />
-    //                 </IconButton>
-    //             </>
-    //         )
-    //     }
-    // ];
-
     const columns = [
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
         { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
+        { id: 'code', label: 'รหัส', minWidth: 100 },
         { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
         { id: 'detail', label: 'รายละเอียด', minWidth: 100 },
         { id: 'documents', label: 'เอกสาร', minWidth: 100 },
@@ -125,11 +139,17 @@ const Documents = () => {
             render: (row) => {
                 switch (row.status) {
                     case 0:
-                        return 'กำลังดำเนินการ';
+                        return 'รอการแก้ไข';
                     case 1:
-                        return 'อนุมัติ';
+                        return 'รอการตรวจสอบ(ผู้อำนวยการโรงพยาบาล)';
                     case 2:
-                        return 'ไม่อนุมัติ';
+                        return 'รอการตรวจสอบ(เจ้าหน้าที่สาธารณสุข)';
+                    case 3:
+                        return 'รอการตรวจสอบ(ผู้ช่วยสาธารณสุข)';
+                    case 4:
+                        return 'รอการตรวจสอบ(สาธารณสุขอำเภอบ้านโพธิ์)';
+                    case 5:
+                        return 'เสร็จสิ้น';
                     default:
                         return '';
                 }
@@ -152,9 +172,9 @@ const Documents = () => {
         }
     ];
 
-    function createData(order, date, topic, detail, documents, reporter, description, status) {
+    function createData(order, date, code, topic, detail, documents, reporter, description, status) {
         const formattedDate = moment(date).format('YYYY-MM-DD');
-        return { order, date: formattedDate, topic, detail, documents, reporter, description, status };
+        return { order, date: formattedDate, code, topic, detail, documents, reporter, description, status };
     }
 
     const handleSubmit = (event) => {
@@ -166,23 +186,6 @@ const Documents = () => {
         if (name && file) {
             const newValue = { name, detail, file };
             setValue([...value, newValue]);
-            axios
-                .post('http://localhost:7000/document', {
-                    topic: name,
-                    detail: detail,
-                    file: file,
-                    name: user.user_firstname + ' ' + user.user_lastname,
-                    user_id: user.user_id
-                })
-                .then(function (response) {
-                    const value = response.data;
-                    if (value.status == 'ok') {
-                        //
-                    }
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
         }
         event.target.elements.name.value = '';
         event.target.elements.detail.value = '';
@@ -244,9 +247,27 @@ const Documents = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 
-    const handleSaveForm = () => {
-        console.log('save');
-        console.log(value);
+    const handleSaveForm = async () => {
+        console.log('save form', value);
+        await randomTrack();
+        await axios
+            .post('http://localhost:7000/document', {
+                code: track,
+                title: value[0].name,
+                detail: value[0].detail,
+                file: value[0].file,
+                name: user.user_firstname + ' ' + user.user_lastname,
+                hospital: user.hospital_id
+            })
+            .then(function (response) {
+                const value = response.data;
+                if (value.status == 'ok') {
+                    //
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
         setOpen(false);
         setActiveStep(0);
         setValue([]);
@@ -260,6 +281,11 @@ const Documents = () => {
 
     const handleCloseCheck = () => {
         setOpenCheck(false);
+    };
+
+    const randomTrack = () => {
+        var track = `DOC-${user.hospital_id}${moment().format('YYYYMMDDHHmmss')}`;
+        setTrack(track);
     };
 
     return (
@@ -285,9 +311,9 @@ const Documents = () => {
                         padding: '30px'
                     }}
                 >
-                    <Button variant="contained" sx={{ float: 'left', marginBottom: '20px' }}>
+                    {/* <Button variant="contained" sx={{ float: 'left', marginBottom: '20px' }}>
                         Export
-                    </Button>
+                    </Button> */}
                     <TableContainer sx={{ maxHeight: 440 }}>
                         <Table stickyHeader aria-label="sticky table">
                             <TableHead>
@@ -422,21 +448,71 @@ const Documents = () => {
                 </Dialog>
 
                 <Dialog
+                    fullWidth={true}
+                    maxWidth={'sm'}
                     open={openCheck}
                     onClose={handleCloseCheck}
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description"
                 >
-                    <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+                    <DialogTitle id="alert-dialog-title">
+                        <p style={{ fontSize: '26px' }}>รายละเอียดเอกสาร</p>
+                    </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps
-                            are running.
+                            <Grid>
+                                <p style={{ fontSize: '20px' }}>รหัสเอกสาร: {history.code}</p>
+                            </Grid>
+                            <Grid>
+                                <p style={{ fontSize: '20px' }}>ชื่อ - นามสกุล: {history.reporter}</p>
+                            </Grid>
+                            <Grid>
+                                <p style={{ fontSize: '20px' }}>วันที่ส่งเอกสาร: {history.date}</p>
+                            </Grid>
+                            <Grid>
+                                <p style={{ fontSize: '20px' }}>รายการเอกสาร: {history.topic}</p>
+                            </Grid>
+                            <Grid>
+                                <p style={{ fontSize: '20px' }}>เอกสารที่แนบ: {history.documents}</p>
+                            </Grid>
                         </DialogContentText>
+
+                        <Box sx={{ maxWidth: 400 }}>
+                            <Stepper activeStep={activeStepDoc} orientation="vertical">
+                                {stepsDocuments.map((step, index) => (
+                                    <Step key={step.label}>
+                                        <StepLabel optional={index === 4 ? <Typography variant="caption">Last step</Typography> : null}>
+                                            <p style={{ fontSize: '18px' }}>{step.label}</p>
+                                            {/* {step.label} */}
+                                        </StepLabel>
+                                        {/* <StepContent>
+                                            <Typography>{step.description}</Typography>
+                                            <Box sx={{ mb: 2 }}>
+                                                <div>
+                                                    <Button variant="contained" onClick={handleNext} sx={{ mt: 1, mr: 1 }}>
+                                                        {index === stepsDocuments.length - 1 ? 'Finish' : 'Continue'}
+                                                    </Button>
+                                                    <Button disabled={index === 0} onClick={handleBack} sx={{ mt: 1, mr: 1 }}>
+                                                        Back
+                                                    </Button>
+                                                </div>
+                                            </Box>
+                                        </StepContent> */}
+                                    </Step>
+                                ))}
+                            </Stepper>
+                            {activeStepDoc === stepsDocuments.length && (
+                                <Paper square elevation={0} sx={{ p: 3 }}>
+                                    <Typography>All steps completed - you&apos;re finished</Typography>
+                                    <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
+                                        Reset
+                                    </Button>
+                                </Paper>
+                            )}
+                        </Box>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={handleCloseCheck}>Disagree</Button>
-                        <Button onClick={handleCloseCheck}>Agree</Button>
+                        <Button onClick={handleCloseCheck}>ปิด</Button>
                     </DialogActions>
                 </Dialog>
             </Card>

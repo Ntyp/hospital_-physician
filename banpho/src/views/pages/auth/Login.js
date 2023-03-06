@@ -42,7 +42,7 @@ const Login = () => {
                 if (value.status == 'ok') {
                     localStorage.setItem('user_data', JSON.stringify(value.data[0]));
                     console.log(value.data[0]);
-                    navigate('/home');
+                    navigate('/');
                 }
             })
             .catch(function (error) {
@@ -90,6 +90,7 @@ const Login = () => {
                                     type="text"
                                     fullWidth
                                     variant="outlined"
+                                    color="success"
                                     required
                                     sx={{ mt: 1, mb: 2 }}
                                 />
@@ -101,6 +102,7 @@ const Login = () => {
                                     type="password"
                                     fullWidth
                                     variant="outlined"
+                                    color="success"
                                     required
                                     sx={{ mt: 2, mb: 2 }}
                                 />

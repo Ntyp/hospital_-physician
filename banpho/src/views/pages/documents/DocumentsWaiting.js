@@ -60,8 +60,6 @@ const DocumentsWaiting = () => {
         } else if (getrole === 'director') {
             role = 4;
         }
-        console.log(`http://localhost:7000/documents/${id}/${role}`);
-
         axios
             .get(`http://localhost:7000/documents-status/${id}/${role}`)
             .then((response) => {
@@ -72,6 +70,7 @@ const DocumentsWaiting = () => {
                         createData(
                             index + 1,
                             item.created_at,
+                            item.document_code,
                             item.document_title,
                             item.document_file,
                             item.created_by,
@@ -89,6 +88,7 @@ const DocumentsWaiting = () => {
     const columns = [
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
         { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
+        { id: 'code', label: 'รหัส', minWidth: 100 },
         { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
         { id: 'document', label: 'เอกสาร', minWidth: 100 },
         { id: 'reporter', label: 'ผู้รายงาน', minWidth: 100 },
@@ -110,33 +110,28 @@ const DocumentsWaiting = () => {
         }
     ];
 
-    function handleDisapprove(row) {
-        // Handle delete action for the row
-    }
-
-    function createData(order, date, topic, document, reporter, detail) {
+    function createData(order, date, code, topic, document, reporter, detail) {
         const formattedDate = moment(date).format('YYYY-MM-DD');
-        return { order, date: formattedDate, topic, document, reporter, detail };
+        return { order, date: formattedDate, code, topic, document, reporter, detail };
     }
 
     const handleClickOpenApprove = (row) => {
-        console.log(row);
-        console.log(user);
         setDocument(row);
         setOpenApprove(true);
     };
 
     const handleCloseApprove = (row) => {
-        console.log(row);
         setDocument([]);
         setOpenApprove(false);
     };
 
-    const handleClickOpenDisapprove = () => {
+    const handleClickOpenDisapprove = (row) => {
+        setDocument(row);
         setOpenDisapprove(true);
     };
 
-    const handleCloseDisapprove = () => {
+    const handleCloseDisapprove = (row) => {
+        setDocument([]);
         setOpenDisapprove(false);
     };
 
@@ -148,13 +143,6 @@ const DocumentsWaiting = () => {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
-    function handleEdit(row) {
-        // Implement the edit functionality here
-    }
-
-    function handleDelete(row) {
-        // Implement the delete functionality here
-    }
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -164,47 +152,53 @@ const DocumentsWaiting = () => {
         setOpen(false);
     };
 
-    const handleApprove = (event) => {
+    const handleDisapprove = (event) => {
         event.preventDefault(); // prevent form submission
-        const comment = event.target.elements.comment.value;
-        console.log(comment);
-        console.log(document);
-        // const id =
+        const comment = event.target.form.comment.value;
+        const id = document.code;
+        console.log(id);
 
-        // axios
-        //     .post(`http://localhost:7000/approve/${id}`, {
-        //         role: user.role_status,
-        //         comment: comment,
-        //         hospital: user.hospital_id
-        //     })
-        //     .then(function (response) {
-        //         const value = response.data;
-        //         if (value.status == 'ok') {
-        //             console.log('update status success');
-        //         }
-        //     })
-        //     .catch(function (error) {
-        //         console.log(error);
-        //     });
-
-        // axios
-        //     .post(`http://localhost:7000/approve/${id}`, {
-        //         role: user.role_status,
-        //         comment: comment,
-        //         hospital: user.hospital_id
-        //     })
-        //     .then((response) => {
-        //         const value = response.data;
-        //         if (value.status == 'ok') {
-        //
-        //         }
-        //     })
-        //     .catch((error) => {
-        //         console.error(error);
-        //     });
+        axios
+            .post(`http://localhost:7000/disapprove/${id}`, {
+                role: user.role_status,
+                comment: comment,
+                hospital: user.hospital_id
+            })
+            .then(function (response) {
+                const value = response.data;
+                if (value.status == 'ok') {
+                    setOpenDisapprove(false);
+                    console.log('update status success');
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     };
 
-    const handleSubmit = (event) => {};
+    const handleApprove = (event) => {
+        event.preventDefault(); // prevent form submission
+        const comment = event.target.form.comment.value;
+        const id = document.code;
+
+        axios
+            .post(`http://localhost:7000/approve/${id}`, {
+                role: user.role_status,
+                comment: comment,
+                hospital: user.hospital_id
+            })
+            .then(function (response) {
+                const value = response.data;
+                if (value.status == 'ok') {
+                    setOpenApprove(false);
+                    console.log('update status success');
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    };
+
     return (
         <div>
             <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
@@ -222,13 +216,13 @@ const DocumentsWaiting = () => {
                         padding: '30px'
                     }}
                 >
-                    <Button
+                    {/* <Button
                         variant="contained"
                         onClick={handleClickOpen}
                         sx={{ float: 'left', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
                     >
                         Export
-                    </Button>
+                    </Button> */}
                     <TableContainer>
                         <Table>
                             <TableHead>
@@ -287,7 +281,9 @@ const DocumentsWaiting = () => {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={handleCloseApprove}>ยกเลิก</Button>
-                            <Button type="submit">ยืนยัน</Button>
+                            <Button onClick={handleApprove} type="submit">
+                                ยืนยัน
+                            </Button>
                         </DialogActions>
                     </form>
                 </Dialog>
@@ -299,23 +295,28 @@ const DocumentsWaiting = () => {
                             ไม่อนุมัติเอกสาร
                         </Typography>
                     </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
-                        {/* <TextField
-                            margin="dense"
-                            id="comment"
-                            label="กรอกรายละเอียดเพิ่มเติม"
-                            type="text"
-                            multiline
-                            rows={4}
-                            fullWidth
-                            variant="outlined"
-                        /> */}
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseDisapprove}>ยกเลิก</Button>
-                        <Button onClick={handleApprove}>ยืนยัน</Button>
-                    </DialogActions>
+                    <form onSubmit={handleDisapprove}>
+                        <DialogContent>
+                            <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
+                            <TextField
+                                margin="dense"
+                                id="comment"
+                                name="comment"
+                                label="กรอกรายละเอียดเพิ่มเติม"
+                                type="text"
+                                multiline
+                                rows={4}
+                                fullWidth
+                                variant="outlined"
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCloseDisapprove}>ยกเลิก</Button>
+                            <Button onClick={handleDisapprove} type="submit">
+                                ยืนยัน
+                            </Button>
+                        </DialogActions>
+                    </form>
                 </Dialog>
             </Card>
         </div>
