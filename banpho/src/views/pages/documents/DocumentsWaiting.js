@@ -261,8 +261,10 @@ const DocumentsWaiting = () => {
 
                 {/* Approve */}
                 <Dialog open={openApprove} fullWidth={true} maxWidth={'sm'} onClose={handleCloseApprove}>
-                    <DialogTitle>
-                        <h2 style={{ fontWeight: 500, color: 'green', textAlign: 'center' }}>อนุมัติเอกสาร</h2>
+                    <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', color: '#fff' }}>
+                            อนุมัติเอกสาร
+                        </Typography>
                     </DialogTitle>
                     <form onSubmit={handleApprove}>
                         <DialogContent>
@@ -290,14 +292,15 @@ const DocumentsWaiting = () => {
 
                 {/* Disapprove */}
                 <Dialog open={openDisapprove} fullWidth={true} maxWidth={'sm'}>
-                    <DialogTitle>
-                        <Typography variant="h3" sx={{ fontWeight: 500, color: 'red', textAlign: 'center' }}>
+                    <DialogTitle sx={{ backgroundColor: '#ff0c34' }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', color: '#fff' }}>
                             ไม่อนุมัติเอกสาร
                         </Typography>
                     </DialogTitle>
                     <form onSubmit={handleDisapprove}>
                         <DialogContent>
-                            <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
+                            {/* <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText> */}
+                            <Typography sx={{ fontSize: '18px' }}>ข้อเสนอของคุณ</Typography>
                             <TextField
                                 margin="dense"
                                 id="comment"

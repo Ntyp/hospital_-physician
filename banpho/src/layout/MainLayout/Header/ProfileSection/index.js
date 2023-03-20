@@ -33,7 +33,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import User1 from 'assets/images/users/user-round.svg';
+import User1 from 'assets/images/users/nurse.png';
 
 // assets
 import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons';
@@ -101,11 +101,10 @@ const ProfileSection = () => {
                     borderRadius: '27px',
                     transition: 'all .2s ease-in-out',
                     borderColor: theme.palette.success.light,
-                    backgroundColor: theme.palette.success.light,
+                    backgroundColor: theme.palette.success.main,
                     '&[aria-controls="menu-list-grow"], &:hover': {
-                        borderColor: theme.palette.success.main,
-                        background: `${theme.palette.success.main}!important`,
-                        color: theme.palette.success.light,
+                        background: `${theme.palette.success.medium}!important`,
+                        color: theme.palette.success.dark,
                         '& svg': {
                             stroke: theme.palette.success.light
                         }
@@ -128,7 +127,7 @@ const ProfileSection = () => {
                         color="inherit"
                     />
                 }
-                label={<IconSettings stroke={1.5} size="1.5rem" color={theme.palette.success.main} />}
+                label={<IconSettings stroke={1.5} size="1.5rem" color={'#fff'} />}
                 variant="outlined"
                 ref={anchorRef}
                 aria-controls={open ? 'menu-list-grow' : undefined}

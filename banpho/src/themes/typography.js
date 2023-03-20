@@ -44,11 +44,11 @@ export default function themeTypography(theme) {
         subtitle2: {
             fontSize: '0.75rem',
             fontWeight: 400,
-            color: theme.darkTextSecondary
+            color: theme.successTextMain
         },
         caption: {
             fontSize: '0.75rem',
-            color: theme.darkTextSecondary,
+            color: theme.successTextMain,
             fontWeight: 400
         },
         body1: {
@@ -60,7 +60,7 @@ export default function themeTypography(theme) {
             letterSpacing: '0em',
             fontWeight: 400,
             lineHeight: '1.5em',
-            color: theme.darkTextPrimary
+            color: theme.successTextMain
         },
         button: {
             textTransform: 'capitalize'
@@ -107,7 +107,7 @@ export default function themeTypography(theme) {
         subMenuCaption: {
             fontSize: '0.6875rem',
             fontWeight: 500,
-            color: theme.darkTextSecondary,
+            color: theme.successTextMain,
             textTransform: 'capitalize'
         },
         commonAvatar: {

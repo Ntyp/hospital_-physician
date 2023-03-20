@@ -18,7 +18,8 @@ $secondary800: #4527a0;
 // success Colors
 $successLight: #b9f6ca;
 $success200: #69f0ae;
-$successMain: #00e676;
+$successMedium: #0b904e;
+$successMain: #086c3c;
 $successDark: #00c853;
 $successSuperDark: #357a38;
 
@@ -76,6 +77,15 @@ $darkTextTitle: #d7dcec;
 $darkTextPrimary: #bdc8f0;
 $darkTextSecondary: #8492c4;
 
+$successTextLight: #b9f6ca;
+$successText200: #69f0ae;
+$successTextMedium: #0b904e;
+$successTextMain: #086c3c;
+$successTextDark: #00c853;
+$successTextSuperDark: #357a38;
+
+$whiteText: #fff;
+
 // ==============================|| JAVASCRIPT ||============================== //
 
 :export {
@@ -99,6 +109,7 @@ $darkTextSecondary: #8492c4;
     // success
     successLight: $successLight;
     success200: $success200;
+    successMedium: $successMedium;
     successMain: $successMain;
     successDark: $successDark;
 
@@ -155,4 +166,6 @@ $darkTextSecondary: #8492c4;
     darkSecondaryDark: $darkSecondaryDark;
     darkSecondary200: $darkSecondary200;
     darkSecondary800: $darkSecondary800;
+
+    textWhite: $whiteText;
 }

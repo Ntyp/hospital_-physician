@@ -146,7 +146,7 @@ const FinishCard = ({ isLoading }) => {
                                         color: '#fff'
                                     }}
                                 >
-                                    เสร็จสิ้นกระบวนการฆ่าเชื้อ
+                                    เสร็จสิ้น
                                 </Typography>
                             </Grid>
                         </Grid>

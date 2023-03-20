@@ -4,7 +4,7 @@ import { Card, Button, TextField } from '@mui/material';
 const TrackingForm = () => {
     return (
         <div>
-            <Card sx={{ minWidth: 275, minHeight: 625 }}>
+            <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
                 <Typography align="center" variant="h3" sx={{ fontWeight: 500 }}>
                     แบบฟอร์มการส่งเอกสาร
                 </Typography>

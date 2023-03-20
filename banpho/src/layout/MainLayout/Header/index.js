@@ -7,6 +7,7 @@ import { Avatar, Box, ButtonBase } from '@mui/material';
 // project imports
 import LogoSection from '../LogoSection';
 import ProfileSection from './ProfileSection';
+import NotificationSection from './NotificationSection';
 
 // assets
 import { IconMenu2 } from '@tabler/icons';
@@ -22,6 +23,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             <Box
                 sx={{
                     width: 228,
+                    // backgroundColor: '#000',
                     display: 'flex',
                     [theme.breakpoints.down('md')]: {
                         width: 'auto'
@@ -31,6 +33,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 <Box component="span" sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
                     <LogoSection />
                 </Box>
+                {/* Hamburger */}
                 <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
                     <Avatar
                         variant="rounded"
@@ -38,11 +41,11 @@ const Header = ({ handleLeftDrawerToggle }) => {
                             ...theme.typography.commonAvatar,
                             ...theme.typography.mediumAvatar,
                             transition: 'all .2s ease-in-out',
-                            background: theme.palette.secondary.light,
-                            color: theme.palette.secondary.dark,
+                            background: theme.palette.success.main,
+                            color: '#fff',
                             '&:hover': {
-                                background: theme.palette.secondary.dark,
-                                color: theme.palette.secondary.light
+                                background: theme.palette.success.medium,
+                                color: '#fff'
                             }
                         }}
                         onClick={handleLeftDrawerToggle}
@@ -56,6 +59,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             {/* header search */}
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ flexGrow: 1 }} />
+            <NotificationSection />
             <ProfileSection />
         </>
     );

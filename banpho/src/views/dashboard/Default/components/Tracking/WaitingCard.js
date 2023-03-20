@@ -146,7 +146,7 @@ const WaitingCard = ({ isLoading }) => {
                                         color: '#fff'
                                     }}
                                 >
-                                    รอการตรวจสอบ
+                                    อยู่ในกระบวนการ
                                 </Typography>
                             </Grid>
                         </Grid>

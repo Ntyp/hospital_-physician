@@ -146,7 +146,7 @@ const ProcessCard = ({ isLoading }) => {
                                         color: '#fff'
                                     }}
                                 >
-                                    อยู่ในกระบวนการฆ่าเชื้อ
+                                    อุปกรณ์ที่ยังไม่ได้รับคืน
                                 </Typography>
                             </Grid>
                         </Grid>

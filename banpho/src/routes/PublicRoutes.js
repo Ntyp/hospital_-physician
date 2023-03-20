@@ -1,4 +1,3 @@
-import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
 import Qrcode from 'views/pages/public-link/TrackingQrcode';
 import TrackingForm from 'views/pages/public-link/TrackingForm';

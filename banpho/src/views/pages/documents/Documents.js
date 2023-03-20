@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import moment from 'moment/moment';
+import fileDownload from 'js-file-download';
 import {
     TextField,
     Card,
@@ -29,13 +30,16 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { FileDownload } from '@mui/icons-material';
+import ErrorIcon from '@mui/icons-material/Error';
+import EditIcon from '@mui/icons-material/Edit';
 
 const Documents = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
     const [open, setOpen] = useState(false);
     const [rows, setRows] = useState([]);
-    const [selectedFile, setSelectedFile] = useState(null);
     const [activeStep, setActiveStep] = useState(0);
     const [value, setValue] = useState([]);
     const [equipment, setEquipment] = useState([]);
@@ -44,6 +48,11 @@ const Documents = () => {
     const [openCheck, setOpenCheck] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
     const [track, setTrack] = useState(null);
+    const [data, getFile] = useState({ name: '', path: '' });
+    const [checkFile, setCheckFile] = useState(false);
+    const [file, setFile] = useState(null);
+    const [fileName, setFileName] = useState('');
+    const [filePath, setFilePath] = useState('');
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -67,7 +76,8 @@ const Documents = () => {
                             item.document_code,
                             item.document_title,
                             item.document_detail,
-                            item.document_file,
+                            // item.document_file,
+                            item.document_file_path,
                             item.created_by,
                             item.document_description,
                             item.document_status
@@ -81,7 +91,6 @@ const Documents = () => {
     }
 
     // Define steps for the stepper
-    const steps = ['ขั้นตอนที่ 1', 'ขั้นตอนที่ 2'];
     const [activeStepDoc, setActiveStepDoc] = useState(0);
 
     const stepsDocuments = [
@@ -90,11 +99,11 @@ const Documents = () => {
             description: ''
         },
         {
-            label: 'เจ้าหน้าที่สาธารณสุข',
+            label: 'เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์',
             description: ''
         },
         {
-            label: 'ผู้ช่วยสาธารณสุข',
+            label: 'ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์',
             description: ``
         },
         {
@@ -122,7 +131,10 @@ const Documents = () => {
         // setHistory(row);
         console.log('row =>', row);
     };
-
+    const handleDownloadFile = (event) => {
+        event.preventDefault();
+        console.log('event =>', event);
+    };
     const columns = [
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
         { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
@@ -161,8 +173,12 @@ const Documents = () => {
             minWidth: 50,
             render: (row) => (
                 <>
+                    {/* แก้ไขเมื่อstatus = 0, ลบเมื่อstatus = 1 */}
                     <IconButton aria-label="check" onClick={() => handleCheck(row)}>
                         <VisibilityRoundedIcon />
+                    </IconButton>
+                    <IconButton aria-label="edit" onClick={() => handleDeleteEquipment(row)}>
+                        <EditIcon />
                     </IconButton>
                     <IconButton aria-label="delete" color="error" size="small" onClick={() => handleDeleteEquipment(row)}>
                         <DeleteIcon />
@@ -174,14 +190,21 @@ const Documents = () => {
 
     function createData(order, date, code, topic, detail, documents, reporter, description, status) {
         const formattedDate = moment(date).format('YYYY-MM-DD');
-        return { order, date: formattedDate, code, topic, detail, documents, reporter, description, status };
+        const downloadLink = documents ? (
+            <a href="" onClick={handleDownloadFile}>
+                เอกสาร
+            </a>
+        ) : (
+            ''
+        );
+        return { order, date: formattedDate, code, topic, detail, documents: downloadLink, reporter, description, status };
     }
 
     const handleSubmit = (event) => {
         event.preventDefault(); // prevent form submission
         const name = event.target.elements.name.value;
         const detail = event.target.elements.detail.value;
-        const file = selectedFile.name;
+        const file = fileName;
         // ถ้ามีชื่ออุปกรณ์และจำนวนส่งมา
         if (name && file) {
             const newValue = { name, detail, file };
@@ -189,7 +212,7 @@ const Documents = () => {
         }
         event.target.elements.name.value = '';
         event.target.elements.detail.value = '';
-        setSelectedFile(null);
+        // setFile(null);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
 
@@ -204,6 +227,102 @@ const Documents = () => {
     const handleEdit = (row) => {
         // Implement the edit logic
     };
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setFile(null);
+        setFileName(null);
+        setFilePath(null);
+        setValue([]);
+        setOpen(false);
+    };
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        setFile(file);
+    };
+
+    const uploadFile = async (e) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fileName', fileName);
+        try {
+            const res = await axios.post('http://localhost:7000/upload', formData);
+            console.log(res);
+            setFileName(res.data.name);
+            setFilePath(res.data.path);
+            setCheckFile(true);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const handleNext = (event) => {
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    };
+
+    const handleBack = (event) => {
+        setFile(null);
+        setFileName(null);
+        setValue([]);
+        setOpen(false);
+    };
+
+    const handleSaveForm = () => {
+        let track = `DOC-${user.hospital_id}${moment().format('YYYYMMDDHHmmss')}`;
+        axios
+            .post('http://localhost:7000/document', {
+                code: track,
+                title: value[0].name,
+                detail: value[0].detail,
+                file: fileName,
+                filePath: filePath,
+                name: user.user_firstname + ' ' + user.user_lastname,
+                hospital: user.hospital_id
+            })
+            .then(function (response) {
+                const value = response.data;
+                if (value.status == 'ok') {
+                    window.location.reload();
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        setOpen(false);
+        setActiveStep(0);
+        setValue([]);
+    };
+
+    const handleCheck = (row) => {
+        setHistory(row);
+        console.log('row =>', row);
+        let status = row.status;
+        setActiveStepDoc(status - 1);
+
+        // setActiveStepDoc;
+        // console.log(status);
+        // console.log('activeStepDoc =>', activeStepDoc);
+        // setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        setOpenCheck(true);
+    };
+
+    const handleCloseCheck = () => {
+        setOpenCheck(false);
+    };
+
+    const checkStep = () => {
+        // setActiveStepDoc((prevActiveStep) => prevActiveStep + 1);
+        //
+    };
+
+    // Confirm delete
+    const handleOpenDelete = () => {};
+
+    const handleCloseDelete = () => {};
 
     const handleDelete = (row) => {
         console.log('row');
@@ -222,82 +341,23 @@ const Documents = () => {
         //     });
     };
 
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-
-    const handleClose = () => {
-        setSelectedFile(null);
-        setValue([]);
-        setOpen(false);
-    };
-
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        setSelectedFile(file);
-    };
-
-    const handleNext = (event) => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    };
-
-    const handleBack = (event) => {
-        setSelectedFile(null);
-        setValue([]);
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
-
-    const handleSaveForm = async () => {
-        console.log('save form', value);
-        await randomTrack();
-        await axios
-            .post('http://localhost:7000/document', {
-                code: track,
-                title: value[0].name,
-                detail: value[0].detail,
-                file: value[0].file,
-                name: user.user_firstname + ' ' + user.user_lastname,
-                hospital: user.hospital_id
-            })
-            .then(function (response) {
-                const value = response.data;
-                if (value.status == 'ok') {
-                    //
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-        setOpen(false);
-        setActiveStep(0);
-        setValue([]);
-    };
-
-    const handleCheck = (row) => {
-        setHistory(row);
-        console.log('row =>', row);
-        setOpenCheck(true);
-    };
-
-    const handleCloseCheck = () => {
-        setOpenCheck(false);
-    };
-
-    const randomTrack = () => {
-        var track = `DOC-${user.hospital_id}${moment().format('YYYYMMDDHHmmss')}`;
-        setTrack(track);
+    const checkStepDocument = (value) => {
+        let step = value;
+        // setActiveStepDoc((prevActiveStep) => prevActiveStep + 1);
     };
 
     return (
         <div>
-            <Card sx={{ minWidth: 275, minHeight: 625 }}>
+            <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
                 <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
                     การนำส่งเอกสาร
                 </Typography>
                 <Button
-                    variant="contained"
-                    sx={{ float: 'right', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
+                    variant="outlined"
                     onClick={handleClickOpen}
+                    sx={{ float: 'right', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
+                    color="success"
+                    startIcon={<AddCircleIcon />}
                 >
                     เพิ่มรายงาน
                 </Button>
@@ -311,9 +371,6 @@ const Documents = () => {
                         padding: '30px'
                     }}
                 >
-                    {/* <Button variant="contained" sx={{ float: 'left', marginBottom: '20px' }}>
-                        Export
-                    </Button> */}
                     <TableContainer sx={{ maxHeight: 440 }}>
                         <Table stickyHeader aria-label="sticky table">
                             <TableHead>
@@ -348,58 +405,61 @@ const Documents = () => {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </Paper>
-
-                <Dialog open={open} onClose={handleClose}>
-                    <DialogTitle>
-                        <Typography variant="h3" sx={{ fontWeight: 500 }}>
-                            แบบฟอร์มอุปกรณ์การแพทย์
+                <Dialog maxWidth={'sm'} fullWidth={true} open={open} onClose={handleClose}>
+                    <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
+                            แบบฟอร์มการส่งเอกสาร
                         </Typography>
                     </DialogTitle>
                     <DialogContent>
-                        <Stepper activeStep={activeStep}>
-                            {steps.map((label) => (
-                                <Step key={label}>
-                                    <StepLabel>{label}</StepLabel>
-                                </Step>
-                            ))}
-                        </Stepper>
                         {activeStep === 0 && (
                             <form onSubmit={handleSubmit}>
+                                <Typography sx={{ marginTop: 5, fontSize: '16px' }}>ชื่อหัวข้อ</Typography>
                                 <TextField
                                     margin="dense"
                                     id="name"
                                     name="name"
-                                    label="ชื่อหัวข้อ"
+                                    placeholder="ระบุหัวข้อของเอกสาร"
                                     type="text"
                                     fullWidth
                                     variant="outlined"
                                 />
+                                <Typography sx={{ marginTop: 3, fontSize: '16px', display: 'inline-block' }}>
+                                    รายละเอียด{' '}
+                                    <Typography sx={{ color: '#ff0c34', fontSize: '16px', display: 'inline-block' }}>(*ถ้ามี)</Typography>
+                                </Typography>
+
                                 <TextField
                                     margin="dense"
                                     id="detail"
                                     name="detail"
-                                    label="รายละเอียด"
+                                    placeholder="ระบุรายละเอียด"
                                     multiline
                                     rows={4}
                                     type="text"
                                     fullWidth
                                     variant="outlined"
+                                    sx={{ marginTop: 2 }}
                                 />
                                 <p>
-                                    อัพโหลดไฟล์:
-                                    {selectedFile ? <span> {selectedFile.name}</span> : <span>No file selected</span>}
-                                    {selectedFile ? (
+                                    แนบไฟล์เอกสาร:
+                                    {file ? <span> {file.name}</span> : <span> No file selected</span>}
+                                    {file ? (
                                         ''
                                     ) : (
                                         <Button variant="contained" component="label" sx={{ marginLeft: '20px' }}>
-                                            แนบไฟล์
+                                            เลือกไฟล์เอกสาร
                                             <input type="file" id="file" name="file" hidden onChange={handleFileChange} />
                                         </Button>
                                     )}
+                                    {file ? (
+                                        <Button variant="contained" component="label" sx={{ marginLeft: '20px' }} onClick={uploadFile}>
+                                            อัพโหลดไฟล์เอกสาร
+                                        </Button>
+                                    ) : (
+                                        ''
+                                    )}
                                 </p>
-                                {/* <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button type="submit">เพิ่มรายการ</Button>
-                                </Box> */}
                                 {equipment.length > 0 ? (
                                     <>
                                         <Typography variant="h3" sx={{ fontWeight: 500 }}>
@@ -409,7 +469,6 @@ const Documents = () => {
                                             {equipment.map((item, key) => (
                                                 <li key={key}>
                                                     {item.name} จำนวน: {item.detail} file: {item.file}
-                                                    {/* <button onClick={() => handleDeleteEquipment(key)}>ลบ</button> */}
                                                     <IconButton onClick={() => handleDeleteEquipment(key)} color="error" size="small">
                                                         <DeleteIcon />
                                                     </IconButton>
@@ -420,33 +479,103 @@ const Documents = () => {
                                 ) : (
                                     ''
                                 )}
-                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button onClick={handleClose}>ย้อนกลับ</Button>
-                                    <Button type="submit">ต่อไป</Button>
-                                </Box>
+                                {checkFile ? (
+                                    <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                        <Button variant="outlined" color="error" onClick={handleClose}>
+                                            ยกเลิก
+                                        </Button>
+                                        <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} type="submit">
+                                            ต่อไป
+                                        </Button>
+                                    </Box>
+                                ) : (
+                                    ''
+                                )}
                             </form>
                         )}
                         {activeStep === 1 && (
                             <>
-                                <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
-                                    รายการทั้งหมด
-                                </Typography>
                                 {value.map((item, key) => (
                                     <div key={key}>
-                                        <p>ชื่อหัวข้อ: {item.name}</p>
-                                        <p>รายละเอียด: {item.detail}</p>
-                                        <p>อัพโหลดไฟล์: {item.file}</p>
+                                        <Grid container>
+                                            <Grid xs={3}>
+                                                <Typography sx={{ fontWeight: 700, marginTop: '20px', fontSize: '16px' }}>
+                                                    ชื่อหัวข้อ
+                                                </Typography>
+                                            </Grid>
+                                            <Grid xs={9}>
+                                                <Typography sx={{ marginTop: '20px', fontSize: '16px' }}>{item.name}</Typography>
+                                            </Grid>
+                                        </Grid>
+                                        <Grid container>
+                                            <Grid xs={3}>
+                                                <Typography
+                                                    sx={{ marginTop: 3, fontSize: '16px', display: 'inline-block', fontWeight: 700 }}
+                                                >
+                                                    รายละเอียด{' '}
+                                                    <Typography
+                                                        sx={{
+                                                            color: '#ff0c34',
+                                                            fontSize: '16px',
+                                                            display: 'inline-block',
+                                                            fontWeight: 700
+                                                        }}
+                                                    >
+                                                        (*ถ้ามี)
+                                                    </Typography>
+                                                </Typography>
+                                            </Grid>
+                                            <Grid xs={9}>
+                                                <Typography sx={{ marginTop: '20px', fontSize: '16px' }}>{item.detail}</Typography>
+                                            </Grid>
+                                        </Grid>
+                                        <Grid container>
+                                            <Grid xs={3}>
+                                                <Typography sx={{ fontWeight: 700, fontSize: '16px', marginTop: '20px' }}>
+                                                    แนบไฟล์เอกสาร
+                                                </Typography>
+                                            </Grid>
+                                            <Grid xs={9}>
+                                                <Typography sx={{ marginTop: '20px', fontSize: '16px', textDecoration: 'underline' }}>
+                                                    {item.file}
+                                                </Typography>
+                                            </Grid>
+                                        </Grid>
                                     </div>
                                 ))}
-                                <DialogActions>
-                                    <Button onClick={handleBack}>ย้อนกลับ</Button>
-                                    <Button onClick={handleSaveForm}>ยืนยัน</Button>
-                                </DialogActions>
+                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                    <Button variant="outlined" color="error" onClick={handleClose}>
+                                        ยกเลิก
+                                    </Button>
+                                    <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} onClick={handleNext}>
+                                        ต่อไป
+                                    </Button>
+                                </Box>
+                            </>
+                        )}
+                        {activeStep === 2 && (
+                            <>
+                                <Box textAlign="center">
+                                    <ErrorIcon sx={{ color: '#ff0c34', fontSize: 180 }} />
+                                </Box>
+                                <Typography
+                                    variant="h3"
+                                    sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#ff0c34' }}
+                                >
+                                    ยืนยันการส่งข้อมูลเอกสาร
+                                </Typography>
+                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                    <Button variant="outlined" color="error" onClick={handleClose}>
+                                        ยกเลิก
+                                    </Button>
+                                    <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} onClick={handleSaveForm}>
+                                        ยืนยัน
+                                    </Button>
+                                </Box>
                             </>
                         )}
                     </DialogContent>
                 </Dialog>
-
                 <Dialog
                     fullWidth={true}
                     maxWidth={'sm'}
@@ -455,65 +584,130 @@ const Documents = () => {
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description"
                 >
-                    <DialogTitle id="alert-dialog-title">
-                        <p style={{ fontSize: '26px' }}>รายละเอียดเอกสาร</p>
+                    <DialogTitle id="alert-dialog-title" sx={{ backgroundColor: '#086c3c' }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
+                            รายละเอียดเอกสาร
+                        </Typography>
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            <Grid>
-                                <p style={{ fontSize: '20px' }}>รหัสเอกสาร: {history.code}</p>
+                            <Grid container sx={{ marginTop: 2, backgroundColor: '#f2f2f2' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: '700' }}>ลำดับที่</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography></Typography>
+                                </Grid>
                             </Grid>
-                            <Grid>
-                                <p style={{ fontSize: '20px' }}>ชื่อ - นามสกุล: {history.reporter}</p>
+                            <Grid container>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: '700' }}>เลขที่เอกสาร</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography>{history.code}</Typography>
+                                </Grid>
                             </Grid>
-                            <Grid>
-                                <p style={{ fontSize: '20px' }}>วันที่ส่งเอกสาร: {history.date}</p>
+                            <Grid container sx={{ backgroundColor: '#f2f2f2' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: '700' }}>ผู้ส่ง</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography>{history.reporter}</Typography>
+                                </Grid>
                             </Grid>
-                            <Grid>
-                                <p style={{ fontSize: '20px' }}>รายการเอกสาร: {history.topic}</p>
+                            <Grid container>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: '700' }}>วันที่ส่ง</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography>{history.date}</Typography>
+                                </Grid>
                             </Grid>
-                            <Grid>
-                                <p style={{ fontSize: '20px' }}>เอกสารที่แนบ: {history.documents}</p>
+                            <Grid container sx={{ backgroundColor: '#f2f2f2' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: '700' }}>ไฟล์เอกสาร</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography>{history.documents}</Typography>
+                                </Grid>
+                            </Grid>
+                            <Grid container>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: '700' }}>รายละเอียด</Typography>
+                                </Grid>
+                            </Grid>
+                            <Grid container sx={{ backgroundColor: '#f2f2f2' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: '700' }}>สถานะการอนุมัติ</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Stepper activeStep={activeStepDoc} orientation="vertical">
+                                        {stepsDocuments.map((step, index) => (
+                                            <Step key={step.label}>
+                                                <StepLabel>
+                                                    <p style={{ fontSize: '16px' }}>{step.label}</p>
+                                                    {/* {step.label} */}
+                                                    {/* {index} */}
+                                                    {/* {index == 1 ? 'Finish' : 'Continue'}
+                                            {index == 2 ? 'Finish' : 'Continue'}
+                                            {index == 3 ? 'Finish' : 'Continue'}
+                                            {index == 4 ? 'Finish' : 'Continue'} */}
+                                                </StepLabel>
+                                            </Step>
+                                        ))}
+                                    </Stepper>
+                                </Grid>
                             </Grid>
                         </DialogContentText>
 
-                        <Box sx={{ maxWidth: 400 }}>
-                            <Stepper activeStep={activeStepDoc} orientation="vertical">
-                                {stepsDocuments.map((step, index) => (
-                                    <Step key={step.label}>
-                                        <StepLabel optional={index === 4 ? <Typography variant="caption">Last step</Typography> : null}>
-                                            <p style={{ fontSize: '18px' }}>{step.label}</p>
-                                            {/* {step.label} */}
-                                        </StepLabel>
-                                        {/* <StepContent>
-                                            <Typography>{step.description}</Typography>
-                                            <Box sx={{ mb: 2 }}>
-                                                <div>
-                                                    <Button variant="contained" onClick={handleNext} sx={{ mt: 1, mr: 1 }}>
-                                                        {index === stepsDocuments.length - 1 ? 'Finish' : 'Continue'}
-                                                    </Button>
-                                                    <Button disabled={index === 0} onClick={handleBack} sx={{ mt: 1, mr: 1 }}>
-                                                        Back
-                                                    </Button>
-                                                </div>
-                                            </Box>
-                                        </StepContent> */}
-                                    </Step>
-                                ))}
-                            </Stepper>
-                            {activeStepDoc === stepsDocuments.length && (
-                                <Paper square elevation={0} sx={{ p: 3 }}>
-                                    <Typography>All steps completed - you&apos;re finished</Typography>
-                                    <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
-                                        Reset
-                                    </Button>
-                                </Paper>
-                            )}
+                        <Grid container>
+                            <Grid xs={3}>
+                                <Typography>ประวัติการอนุมัติ</Typography>
+                            </Grid>
+                            <Grid xs={9}>
+                                <Typography>ผู้อำนวยการโรงพยาบาล</Typography>
+                                <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
+                                <Typography>เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์</Typography>
+                                <Typography>ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์</Typography>
+                                <Typography>สาธารณสุขอำเภอบ้านโพธิ์</Typography>
+                            </Grid>
+                        </Grid>
+                        <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                            <Button variant="outlined" color="error" onClick={handleCloseCheck}>
+                                ออก
+                            </Button>
                         </Box>
                     </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseCheck}>ปิด</Button>
-                    </DialogActions>
+                </Dialog>
+                {/* ลบ */}
+                <Dialog open={openDelete} fullWidth={true} maxWidth={'sm'}>
+                    <DialogTitle>
+                        <Typography variant="h3" sx={{ fontWeight: 500, color: 'red', textAlign: 'center' }}>
+                            แน่ใจที่ต้องการจะลบเอกสารหรือไม่
+                        </Typography>
+                    </DialogTitle>
+                    <form onSubmit={handleDelete}>
+                        <DialogContent>
+                            <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
+                            <TextField
+                                margin="dense"
+                                id="comment"
+                                name="comment"
+                                label="กรอกรายละเอียดเพิ่มเติม"
+                                type="text"
+                                multiline
+                                rows={4}
+                                fullWidth
+                                variant="outlined"
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCloseDelete}>ยกเลิก</Button>
+                            <Button onClick={handleDelete} type="submit">
+                                ยืนยัน
+                            </Button>
+                        </DialogActions>
+                    </form>
                 </Dialog>
             </Card>
         </div>

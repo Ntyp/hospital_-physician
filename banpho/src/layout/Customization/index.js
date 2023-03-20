@@ -120,7 +120,6 @@ const Customization = () => {
                             </SubCard>
                         </Grid>
                         <Grid item xs={12}>
-                            {/* border radius */}
                             <SubCard title="Border Radius">
                                 <Grid item xs={12} container spacing={2} alignItems="center" sx={{ mt: 2.5 }}>
                                     <Grid item>

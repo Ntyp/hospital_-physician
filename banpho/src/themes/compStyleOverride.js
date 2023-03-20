@@ -55,19 +55,19 @@ export default function componentStyleOverrides(theme) {
                     paddingBottom: '10px',
                     '&.Mui-selected': {
                         color: theme.menuSelected,
-                        backgroundColor: theme.menuSelectedBack,
-                        '&:hover': {
-                            backgroundColor: theme.menuSelectedBack
-                        },
+                        // backgroundColor: theme.menuSelectedBack,
+                        // '&:hover': {
+                        //     backgroundColor: theme.menuSelectedBack
+                        // },
                         '& .MuiListItemIcon-root': {
                             color: theme.menuSelected
                         }
                     },
                     '&:hover': {
-                        backgroundColor: theme.menuSelectedBack,
-                        color: theme.menuSelected,
+                        // backgroundColor: theme.menuSelectedBack,
+                        color: theme.menuSelected, //hover text
                         '& .MuiListItemIcon-root': {
-                            color: theme.menuSelected
+                            color: theme.menuSelected //สีไอคอน
                         }
                     }
                 }
@@ -84,16 +84,16 @@ export default function componentStyleOverrides(theme) {
         MuiListItemText: {
             styleOverrides: {
                 primary: {
-                    color: theme.textDark
+                    color: '#fff'
                 }
             }
         },
         MuiInputBase: {
             styleOverrides: {
                 input: {
-                    color: theme.textDark,
+                    color: theme.menuSelected,
                     '&::placeholder': {
-                        color: theme.darkTextSecondary,
+                        color: '#fff',
                         fontSize: '0.875rem'
                     }
                 }

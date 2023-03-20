@@ -20,7 +20,7 @@ import PictureAsPdfTwoToneIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@mui/icons-material/ArchiveOutlined';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-    backgroundColor: theme.palette.secondary.dark,
+    backgroundColor: theme.palette.info.main,
     color: '#fff',
     overflow: 'hidden',
     position: 'relative',
@@ -29,7 +29,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: theme.palette.secondary[800],
+        background: theme.palette.info.dark,
         borderRadius: '50%',
         top: -85,
         right: -95,
@@ -43,7 +43,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: theme.palette.secondary[800],
+        background: theme.palette.info.dark,
         borderRadius: '50%',
         top: -125,
         right: -15,
@@ -109,7 +109,7 @@ const AllCard = ({ isLoading }) => {
                                             sx={{
                                                 ...theme.typography.commonAvatar,
                                                 ...theme.typography.largeAvatar,
-                                                backgroundColor: theme.palette.secondary[800],
+                                                backgroundColor: theme.palette.info.dark,
                                                 mt: 1
                                             }}
                                         >
@@ -130,8 +130,8 @@ const AllCard = ({ isLoading }) => {
                                             sx={{
                                                 cursor: 'pointer',
                                                 ...theme.typography.smallAvatar,
-                                                backgroundColor: theme.palette.secondary[200],
-                                                color: theme.palette.secondary.dark
+                                                backgroundColor: theme.palette.info.light,
+                                                color: theme.palette.info.dark
                                             }}
                                         >
                                             <ArrowUpwardIcon fontSize="inherit" sx={{ transform: 'rotate3d(1, 1, 1, 45deg)' }} />
@@ -144,7 +144,7 @@ const AllCard = ({ isLoading }) => {
                                     sx={{
                                         fontSize: '1rem',
                                         fontWeight: 500,
-                                        color: theme.palette.secondary[200]
+                                        color: '#fff'
                                     }}
                                 >
                                     อุปกรณ์ที่ส่งไปฆ่าเชื้อทั้งหมด

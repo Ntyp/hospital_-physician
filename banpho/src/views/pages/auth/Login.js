@@ -12,7 +12,8 @@ import {
     Typography,
     createTheme,
     ThemeProvider,
-    makeStyles
+    makeStyles,
+    Alert
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
@@ -41,8 +42,9 @@ const Login = () => {
                 const value = response.data;
                 if (value.status == 'ok') {
                     localStorage.setItem('user_data', JSON.stringify(value.data[0]));
-                    console.log(value.data[0]);
                     navigate('/');
+                } else {
+                    console.log('error');
                 }
             })
             .catch(function (error) {

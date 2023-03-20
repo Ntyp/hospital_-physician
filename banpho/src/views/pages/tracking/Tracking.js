@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment/moment';
 import { useNavigate } from 'react-router-dom';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {
     Card,
     Typography,
@@ -24,12 +25,14 @@ import {
     IconButton,
     Stepper,
     Step,
-    StepLabel
+    StepLabel,
+    Grid
 } from '@mui/material';
 import axios from 'axios';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const Tracking = () => {
     const [user, setUser] = useState();
@@ -60,7 +63,11 @@ const Tracking = () => {
             .then((response) => {
                 console.log(response.data.data);
                 const value = response.data.data;
-                setRows(value.map((item, index) => createData(index + 1, item.date_at, item.group_id, item.tracking_status)));
+                setRows(
+                    value.map((item, index) =>
+                        createData(index + 1, item.date_at, item.group_id, item.tracking_sender, item.tracking_status)
+                    )
+                );
             })
             .catch((error) => {
                 console.error(error);
@@ -72,12 +79,10 @@ const Tracking = () => {
         return { date, code, status };
     }
 
-    const steps = ['ขั้นตอนที่ 1', 'ขั้นตอนที่ 2'];
-
     // ปุ่มดวงตาสำหรับดูรายละเอียดแต่ละอัน
     const handleCheck = (row) => {
         const track = row.track;
-        console.log('🚀 ~ file: Tracking.js:80 ~ handleCheck ~ track:', track);
+        console.log(track);
         axios
             .get(`http://localhost:7000/tracking-data/${track}`)
             .then((response) => {
@@ -112,6 +117,7 @@ const Tracking = () => {
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
         { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
         { id: 'track', label: 'รหัสชุด', minWidth: 100 },
+        { id: 'sender', label: 'ผู้ส่ง', minWidth: 100 },
         { id: 'status', label: 'สถานะ', minWidth: 100 },
         {
             id: 'check',
@@ -131,9 +137,9 @@ const Tracking = () => {
     ];
 
     // นำค่าไปใส่ในตาราง
-    function createData(order, date, track, status) {
+    function createData(order, date, track, sender, status) {
         const formattedDate = moment(date).format('YYYY-MM-DD');
-        return { order, date: formattedDate, track, status };
+        return { order, date: formattedDate, track, sender, status };
     }
 
     const handleChangePage = (event, newPage) => {
@@ -181,7 +187,7 @@ const Tracking = () => {
             .then(function (response) {
                 const value = response.data;
                 if (value.status == 'ok') {
-                    //
+                    getData(storage);
                 }
             })
             .catch(function (error) {
@@ -254,14 +260,16 @@ const Tracking = () => {
 
     return (
         <div>
-            <Card sx={{ minWidth: 275, minHeight: 650 }}>
+            <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
                 <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
                     การนำส่งอุปกรณ์
                 </Typography>
                 <Button
-                    variant="contained"
+                    variant="outlined"
                     onClick={handleClickOpen}
                     sx={{ float: 'right', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
+                    color="success"
+                    startIcon={<AddCircleIcon />}
                 >
                     นำส่งอุปกรณ์
                 </Button>
@@ -310,87 +318,168 @@ const Tracking = () => {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </Paper>
-                <Dialog open={open} onClose={handleClose}>
-                    <DialogTitle>
-                        <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center' }}>
-                            แบบฟอร์มอุปกรณ์การแพทย์
+                <Dialog maxWidth={'sm'} open={open} onClose={handleClose}>
+                    <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', color: '#fff' }}>
+                            แบบฟอร์มการนำส่งอุปกรณ์-เครื่องมือการแพทย์
                         </Typography>
                     </DialogTitle>
-                    <DialogContent>
-                        <Stepper activeStep={activeStep}>
-                            {steps.map((label) => (
-                                <Step key={label}>
-                                    <StepLabel>{label}</StepLabel>
-                                </Step>
-                            ))}
-                        </Stepper>
+                    <DialogContent sx={{ marginTop: 5 }}>
                         {activeStep === 0 && (
                             <form onSubmit={handleSubmit}>
+                                <Typography variant="h3" sx={{ fontWeight: 500 }}>
+                                    ชื่ออุปกรณ์ - เครื่องมือการแพทย์
+                                </Typography>
                                 <TextField
                                     margin="dense"
                                     id="name"
                                     name="name"
-                                    label="ชื่ออุปกรณ์"
                                     type="text"
                                     fullWidth
+                                    placeholder="กรุณาระบุชื่อของอุปกรณ์การแพทย์"
                                     variant="outlined"
                                     sx={{ marginTop: '20px', marginBottom: '10px' }}
                                 />
+                                <Typography variant="h3" sx={{ fontWeight: 500 }}>
+                                    จำนวนที่ต้องการส่ง
+                                </Typography>
                                 <TextField
                                     margin="dense"
                                     id="quantity"
                                     name="quantity"
-                                    label="จำนวน"
                                     type="number"
                                     fullWidth
+                                    placeholder="กรุณาระบุจำนวน"
                                     variant="outlined"
+                                    sx={{ marginTop: '20px', marginBottom: '10px' }}
                                 />
                                 <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button type="submit">เพิ่มอุปกรณ์ +</Button>
+                                    <Button
+                                        variant="outlined"
+                                        color="success"
+                                        type="submit"
+                                        style={{ fontSize: '18px', borderRadius: 100 }}
+                                    >
+                                        เพิ่มรายการ
+                                    </Button>
                                 </Box>
                                 {equipment.length > 0 ? (
                                     <>
-                                        <Typography variant="h3" sx={{ fontWeight: 500 }}>
-                                            รายการทั้งหมด
-                                        </Typography>
-                                        <ol>
-                                            {equipment.map((item, key) => (
-                                                <li key={key}>
-                                                    {item.name} จำนวน: {item.quantity}
-                                                    <IconButton onClick={() => handleDeleteEquipment(key)} color="error" size="small">
-                                                        <DeleteIcon />
-                                                    </IconButton>
-                                                </li>
-                                            ))}
-                                        </ol>
+                                        <div
+                                            className="header-show-detail"
+                                            style={{ backgroundColor: '#086c3c', padding: '15px', borderRadius: 100 }}
+                                        >
+                                            <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
+                                                รายการทั้งหมด
+                                            </Typography>
+                                        </div>
+                                        {equipment.map((item, key) => (
+                                            <li key={key} style={{ listStyle: 'none', marginTop: 20 }}>
+                                                <Grid container>
+                                                    <Grid item xs={1} style={{ fontSize: '18px' }}>
+                                                        {key + 1}.
+                                                    </Grid>
+                                                    <Grid item xs={5} style={{ fontSize: '18px' }}>
+                                                        {item.name}
+                                                    </Grid>
+                                                    <Grid item xs={4} style={{ fontSize: '18px' }}>
+                                                        จำนวน: {item.quantity}
+                                                    </Grid>
+                                                    <Grid item xs={2}>
+                                                        <IconButton onClick={() => handleDeleteEquipment(key)} color="error" size="small">
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </Grid>
+                                                </Grid>
+                                            </li>
+                                        ))}
                                     </>
                                 ) : (
                                     ''
                                 )}
                                 <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button onClick={handleClose}>ย้อนกลับ</Button>
-                                    <Button type="submit" onClick={handleNext}>
-                                        ต่อไป
+                                    <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleClose}>
+                                        ย้อนกลับ
                                     </Button>
+                                    {equipment.length > 0 ? (
+                                        <Button
+                                            type="submit"
+                                            variant="outlined"
+                                            color="success"
+                                            sx={{ marginLeft: 3, borderRadius: 100 }}
+                                            onClick={handleNext}
+                                        >
+                                            ต่อไป
+                                        </Button>
+                                    ) : (
+                                        ''
+                                    )}
                                 </Box>
                             </form>
                         )}
                         {activeStep === 1 && (
                             <>
-                                <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
+                                <Typography
+                                    variant="h3"
+                                    sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px' }}
+                                >
                                     รายการทั้งหมด
                                 </Typography>
-                                <ol>
-                                    {equipment.map((item, key) => (
-                                        <li key={key}>
-                                            {item.name} จำนวน: {item.quantity}
-                                        </li>
-                                    ))}
-                                </ol>
-                                <DialogActions>
-                                    <Button onClick={handleBack}>ย้อนกลับ</Button>
-                                    <Button onClick={handleSaveForm}>ยืนยัน</Button>
-                                </DialogActions>
+                                {equipment.map((item, key) => (
+                                    <li style={{ fontSize: '18px', marginTop: '10px', listStyle: 'none' }} key={key}>
+                                        <Grid container>
+                                            <Grid item xs={1} style={{ fontSize: '18px' }}>
+                                                {key + 1}.
+                                            </Grid>
+                                            <Grid item xs={5} style={{ fontSize: '18px' }}>
+                                                {item.name}
+                                            </Grid>
+                                            <Grid item xs={4} style={{ fontSize: '18px' }}>
+                                                จำนวน: {item.quantity}
+                                            </Grid>
+                                        </Grid>
+                                    </li>
+                                ))}
+                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                    <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleBack}>
+                                        ย้อนกลับ
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        color="success"
+                                        sx={{ marginLeft: 3, borderRadius: 100 }}
+                                        onClick={handleNext}
+                                    >
+                                        ต่อไป
+                                    </Button>
+                                </Box>
+                            </>
+                        )}
+                        {activeStep === 2 && (
+                            <>
+                                <Box textAlign="center">
+                                    <ErrorIcon sx={{ color: '#ff0c34', fontSize: 180 }} />
+                                </Box>
+
+                                <Typography
+                                    variant="h3"
+                                    sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#ff0c34' }}
+                                >
+                                    ยืนยันการส่งข้อมูล
+                                </Typography>
+                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                    <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleBack}>
+                                        ย้อนกลับ
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        color="success"
+                                        sx={{ marginLeft: 3, borderRadius: 100 }}
+                                        onClick={handleSaveForm}
+                                    >
+                                        ยืนยัน
+                                    </Button>
+                                </Box>
                             </>
                         )}
                     </DialogContent>
@@ -404,16 +493,19 @@ const Tracking = () => {
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description"
                 >
-                    <DialogTitle id="alert-dialog-title">
-                        <h3 style={{ fontSize: '25px' }}>ประวัติการส่ง</h3>
-                        <hr />
+                    <DialogTitle id="alert-dialog-title" sx={{ backgroundColor: '#086c3c' }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
+                            รายละเอียดการนำส่งอุปกรณ์-เครื่องมือการแพทย์
+                        </Typography>
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            <p style={{ fontSize: '18px' }}>ชื่อผู้ส่ง:{history.tracking_sender}</p>
-                            <p style={{ fontSize: '18px' }}>หมายเลข: {history.group_id}</p>
-                            <p style={{ fontSize: '18px' }}>วันที่ส่ง: {moment(history.date_at).format('YYYY-MM-DD')}</p>
-                            <p style={{ fontSize: '18px' }}>อุปกรณ์ที่ส่ง:</p>
+                            <p style={{ fontSize: '18px', backgroundColor: '#f2f2f2', padding: 15 }}>ผู้ส่ง:{history.tracking_sender}</p>
+                            <p style={{ fontSize: '18px', padding: 15 }}>รหัสชุด: {history.group_id}</p>
+                            <p style={{ fontSize: '18px', backgroundColor: '#f2f2f2', padding: 15 }}>
+                                วันที่ส่ง: {moment(history.date_at).format('YYYY-MM-DD')}
+                            </p>
+                            <p style={{ fontSize: '18px', padding: 15 }}>อุปกรณ์ที่ส่ง:</p>
                             <ol>
                                 {showItem.map((item, key) => (
                                     <li style={{ fontSize: '18px' }} key={key}>
@@ -421,7 +513,7 @@ const Tracking = () => {
                                     </li>
                                 ))}
                             </ol>
-                            <p style={{ fontSize: '18px' }}>สถานะ: {history.tracking_status}</p>
+                            <p style={{ fontSize: '18px', backgroundColor: '#f2f2f2', padding: 15 }}>สถานะ: {history.tracking_status}</p>
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>

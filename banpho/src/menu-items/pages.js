@@ -165,10 +165,10 @@ if (role === 'hospital staff') {
             children: [
                 {
                     id: 'user-edit',
-                    title: 'จัดการสมาชิก',
+                    title: 'จัดการโรงพยาบาล',
                     type: 'item',
                     icon: icons.IconUserExclamation,
-                    url: '/users',
+                    url: '/hospital',
                     target: true
                 }
             ]

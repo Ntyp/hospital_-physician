@@ -41,6 +41,7 @@ export default function themePalette(theme) {
         success: {
             light: theme.colors?.successLight,
             200: theme.colors?.success200,
+            medium: theme.colors?.successMedium,
             main: theme.colors?.successMain,
             dark: theme.colors?.successDark,
             superDark: theme.colors?.successSuperDark
@@ -63,8 +64,10 @@ export default function themePalette(theme) {
         text: {
             primary: theme.darkTextPrimary,
             secondary: theme.darkTextSecondary,
+            success: theme.successTextMain,
             dark: theme.textDark,
-            hint: theme.colors?.grey100
+            hint: theme.colors?.grey100,
+            white: theme.textWhite
         },
         background: {
             paper: theme.paper,
