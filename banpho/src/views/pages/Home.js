@@ -27,16 +27,15 @@ const Home = () => {
     const navigate = useNavigate();
 
     const handleMenuLeft = () => {
-        navigate('/notification');
+        navigate('/tracking');
     };
 
     const handleMenuRight = () => {
-        navigate('/notification');
+        navigate('/documents');
     };
 
     return (
         <div>
-            {/* <img src={logo} style={{ width: 200, marginBottom: 20 }} /> */}
             <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px' }}>
                 ระบบสารสนเทศเพื่อสนับสนุนการปฏิบัติงาน สำนักงานสาธารณสุขอำเภอบ้านโพธิ์จังหวัดฉะเชิงเทรา
             </Typography>

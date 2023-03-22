@@ -107,6 +107,7 @@ const TrackingForm = () => {
                     date: date
                 })
                 .then(function (response) {
+                    setOpenConfirm(false);
                     if (response.status == 'ok') {
                         setOpenConfirm(false);
                         console.log('hello');
@@ -124,9 +125,9 @@ const TrackingForm = () => {
                     date: null
                 })
                 .then(function (response) {
+                    setOpenConfirm(false);
                     if (response.status == 'ok') {
                         setOpenConfirm(false);
-                        window.open('about:blank', '_self');
                         window.close();
                     }
                 })

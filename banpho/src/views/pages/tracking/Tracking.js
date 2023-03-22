@@ -199,7 +199,7 @@ const Tracking = () => {
                 console.log(response);
                 const value = response.data;
                 if (value.status == 'ok') {
-                    getData(storage);
+                    getData(user);
                 }
             })
             .catch(function (error) {
@@ -540,7 +540,7 @@ const Tracking = () => {
                                                 fontSize: '16px'
                                             }}
                                         >
-                                            {index} , {activeStepTracking}
+                                            {/* {index} , {activeStepTracking} */}
                                             {step.label}
                                         </StepLabel>
                                     </Step>
