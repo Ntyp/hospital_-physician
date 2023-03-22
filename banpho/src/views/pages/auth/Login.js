@@ -41,8 +41,13 @@ const Login = () => {
             .then(function (response) {
                 const value = response.data;
                 if (value.status == 'ok') {
+                    console.log('value', value);
                     localStorage.setItem('user_data', JSON.stringify(value.data[0]));
-                    navigate('/');
+                    if (value.data[0].user_role == 'hospital staff') {
+                        navigate('/home');
+                    } else {
+                        navigate('/');
+                    }
                 } else {
                     console.log('error');
                 }
