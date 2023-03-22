@@ -99,12 +99,12 @@ const TotalGrowthBarChart = ({ isLoading }) => {
                             <Grid container alignItems="center" justifyContent="space-between">
                                 <Grid item>
                                     <Grid container direction="column" spacing={1}>
-                                        <Grid item>
+                                        {/* <Grid item>
                                             <Typography variant="subtitle2">Total Growth</Typography>
                                         </Grid>
                                         <Grid item>
                                             <Typography variant="h3">$2,324.00</Typography>
-                                        </Grid>
+                                        </Grid> */}
                                     </Grid>
                                 </Grid>
                                 <Grid item>

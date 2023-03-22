@@ -56,7 +56,7 @@ const TrackingQrcode = () => {
                     <Grid xs={6} sx={{ textAlign: 'left' }}>
                         {equipment.map((item, index) => (
                             <span style={{ fontSize: '22px' }}>
-                                {index + 1}.{item.equipment_name} จำนวน {item.equipment_quantity} ชิ้น
+                                {index + 1}.{item.equipment_name} จำนวน {item.equipment_quantity} ชิ้น <br />
                             </span>
                         ))}
                     </Grid>

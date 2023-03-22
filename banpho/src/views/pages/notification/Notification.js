@@ -60,7 +60,7 @@ const Notification = () => {
     ];
 
     function createData(order, date, topic) {
-        const formattedDate = moment(date).format('YYYY-MM-DD');
+        const formattedDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
         return { order, date: formattedDate, topic };
     }
 

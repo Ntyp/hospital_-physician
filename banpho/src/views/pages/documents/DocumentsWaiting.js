@@ -49,19 +49,18 @@ const DocumentsWaiting = () => {
         const id = value.hospital_id;
         const getrole = value.user_role;
         console.log('getrole', getrole);
-        let role = 0;
-
+        let status = 0;
         if (getrole === 'director hospital') {
-            role = 1;
+            status = 1;
         } else if (getrole === 'officer') {
-            role = 2;
+            status = 2;
         } else if (getrole === 'assistant') {
-            role = 3;
+            status = 3;
         } else if (getrole === 'director') {
-            role = 4;
+            status = 4;
         }
         axios
-            .get(`http://localhost:7000/documents-status/${id}/${role}`)
+            .get(`http://localhost:7000/documents-status/${id}/${status}`)
             .then((response) => {
                 console.log(response.data.data);
                 const value = response.data.data;
@@ -74,7 +73,7 @@ const DocumentsWaiting = () => {
                             item.document_title,
                             item.document_file,
                             item.created_by,
-                            item.document_description
+                            item.document_detail
                         )
                     )
                 );
@@ -188,6 +187,7 @@ const DocumentsWaiting = () => {
                 hospital: user.hospital_id
             })
             .then(function (response) {
+                console.log(response);
                 const value = response.data;
                 if (value.status == 'ok') {
                     setOpenApprove(false);

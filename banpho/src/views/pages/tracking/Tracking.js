@@ -47,11 +47,13 @@ const Tracking = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [history, setHistory] = useState([]);
     const [activeStep, setActiveStep] = useState(0);
+    const [activeStepTracking, setActiveStepTracking] = useState(0);
     const navigate = useNavigate();
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
         const storage = JSON.parse(userData);
+        console.log('storage =>', storage);
         setUser(storage);
         getData(storage);
     }, []);
@@ -61,7 +63,6 @@ const Tracking = () => {
         axios
             .get(`http://localhost:7000/tracking/${id}`)
             .then((response) => {
-                console.log(response.data.data);
                 const value = response.data.data;
                 setRows(
                     value.map((item, index) =>
@@ -82,12 +83,21 @@ const Tracking = () => {
     // ปุ่มดวงตาสำหรับดูรายละเอียดแต่ละอัน
     const handleCheck = (row) => {
         const track = row.track;
-        console.log(track);
         axios
             .get(`http://localhost:7000/tracking-data/${track}`)
             .then((response) => {
-                console.log(response.data.data[0]);
+                console.log(response.data);
                 setHistory(response.data.data[0]);
+                let status = response.data.data[0].tracking_status;
+                if (status == 'จัดส่งอุปกรณ์และเครื่องมือ') {
+                    setActiveStepTracking(1);
+                } else if (status == 'รอระบุวันนัดรับ') {
+                    setActiveStepTracking(2);
+                } else if (status == 'รับอุปกรณ์เรียบร้อย') {
+                    setActiveStepTracking(3);
+                } else if (status == 'เสร็จสิ้น') {
+                    setActiveStepTracking(4);
+                }
             })
             .catch((error) => {
                 console.error(error);
@@ -96,14 +106,12 @@ const Tracking = () => {
         axios
             .get(`http://localhost:7000/tracking-item/${track}`)
             .then((response) => {
-                console.log('item', response.data.data);
                 setShowItem(response.data.data);
             })
             .catch((error) => {
                 console.error(error);
             });
 
-        console.log('row =>', row);
         setOpenCheck(true);
     };
 
@@ -136,6 +144,21 @@ const Tracking = () => {
         }
     ];
 
+    const stepsTracking = [
+        {
+            label: 'จัดส่งอุปกรณ์และเครื่องมือ'
+        },
+        {
+            label: 'รอระบุวันนัดรับ'
+        },
+        {
+            label: 'รับอุปกรณ์เรียบร้อย'
+        },
+        {
+            label: 'เสร็จสิ้น'
+        }
+    ];
+
     // นำค่าไปใส่ในตาราง
     function createData(order, date, track, sender, status) {
         const formattedDate = moment(date).format('YYYY-MM-DD');
@@ -160,18 +183,6 @@ const Tracking = () => {
         setOpen(false);
     };
 
-    const handleEdit = (row) => {
-        // Implement the edit logic
-    };
-
-    const handleDelete = (row) => {
-        // Implement the delete logic
-    };
-
-    const handleNextPage = () => {
-        // Next Page
-    };
-
     const handleSaveForm = () => {
         axios
             .post('http://localhost:7000/create-tracking', {
@@ -185,6 +196,7 @@ const Tracking = () => {
                 place: user.user_place
             })
             .then(function (response) {
+                console.log(response);
                 const value = response.data;
                 if (value.status == 'ok') {
                     getData(storage);
@@ -222,11 +234,7 @@ const Tracking = () => {
         setEquipment((prevEquipment) => prevEquipment.filter((item, index) => index !== key));
     };
 
-    // const randomTrack = () => {
-    //     var track = `BPTH` + Math.floor(Math.random() * 90000);
-    //     setTrack(track);
-    // };
-
+    // สุ่ม Track
     const randomTrack = () => {
         var track = `BPTH-${user.hospital_id}${moment().format('YYYYMMDDHHmmss')}`;
         setTrack(track);
@@ -514,6 +522,30 @@ const Tracking = () => {
                                 ))}
                             </ol>
                             <p style={{ fontSize: '18px', backgroundColor: '#f2f2f2', padding: 15 }}>สถานะ: {history.tracking_status}</p>
+                            {/* <Stepper activeStep={activeStepTracking} orientation="vertical">
+                                {stepsTracking.map((step, index) => (
+                                    <Step key={step.label}>
+                                        <StepLabel>
+                                            <p style={{ fontSize: '16px' }}>{step.label}</p>
+                                        </StepLabel>
+                                    </Step>
+                                ))}
+                            </Stepper> */}
+                            <Stepper activeStep={activeStepTracking} orientation="vertical" style={{ backgroundColor: 'white' }}>
+                                {stepsTracking.map((step, index) => (
+                                    <Step key={step.label}>
+                                        <StepLabel
+                                            style={{
+                                                color: index === activeStepTracking ? '#086c3c' : 'gray',
+                                                fontSize: '16px'
+                                            }}
+                                        >
+                                            {index} , {activeStepTracking}
+                                            {step.label}
+                                        </StepLabel>
+                                    </Step>
+                                ))}
+                            </Stepper>
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>

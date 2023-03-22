@@ -75,6 +75,10 @@ const TrackingForm = () => {
         setOpenPickup(true);
     };
 
+    const handleClosePickup = () => {
+        setOpenPickup(false);
+    };
+
     const handleGetBack = (event) => {
         axios
             .put(`http://localhost:7000/tracking-back/${track}`)
@@ -138,6 +142,7 @@ const TrackingForm = () => {
                 date: date
             })
             .then(function (response) {
+                console.log('response =>', response);
                 if (response.status == 'ok') {
                     setOpenPickup(false);
                     console.log('hello');
@@ -211,17 +216,33 @@ const TrackingForm = () => {
                         </Box>
                     </form>
                 </Box>
-                <Dialog open={openConfirm} onClose={handleClose} aria-describedby="alert-dialog-description">
-                    <DialogTitle>
-                        <ListItemIcon>
-                            <CheckCircleOutlineOutlinedIcon sx={{ fontSize: '7rem', color: '#357a38' }} />
-                        </ListItemIcon>
-                        <Typography variant="h5">ยืนยันการรับอุปกรณ์</Typography>
-                    </DialogTitle>
-                    <DialogActions>
-                        <Button onClick={handleClose}>ยกเลิก</Button>
-                        <Button onClick={handleAccept}>ยืนยัน</Button>
-                    </DialogActions>
+                <Dialog
+                    fullWidth={true}
+                    maxWidth={'sm'}
+                    open={openConfirm}
+                    onClose={handleClose}
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogContent>
+                        <Box textAlign="center">
+                            <CheckCircleOutlineOutlinedIcon sx={{ color: '#357a38', fontSize: 180 }} />
+                        </Box>
+
+                        <Typography
+                            variant="h3"
+                            sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#357a38' }}
+                        >
+                            ยืนยันการรับอุปกรณ์
+                        </Typography>
+                        <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                            <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleClose}>
+                                ย้อนกลับ
+                            </Button>
+                            <Button variant="outlined" color="success" sx={{ marginLeft: 3, borderRadius: 100 }} onClick={handleAccept}>
+                                ยืนยัน
+                            </Button>
+                        </Box>
+                    </DialogContent>
                 </Dialog>
                 ;
             </Container>
@@ -275,17 +296,38 @@ const TrackingForm = () => {
                         </Box>
                     </form>
                 </Box>
-                <Dialog open={openPickup} onClose={handleClose} aria-describedby="alert-dialog-description">
-                    <DialogTitle>
-                        <ListItemIcon>
-                            <CheckCircleOutlineOutlinedIcon sx={{ fontSize: '7rem', color: '#357a38' }} />
-                        </ListItemIcon>
-                        <Typography variant="h5">ยืนยันการรับอุปกรณ์</Typography>
-                    </DialogTitle>
-                    <DialogActions>
-                        <Button onClick={handleClose}>ยกเลิก</Button>
-                        <Button onClick={handleAcceptPickup}>ยืนยัน</Button>
-                    </DialogActions>
+                <Dialog
+                    fullWidth={true}
+                    maxWidth={'sm'}
+                    open={openPickup}
+                    onClose={handleClosePickup}
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogContent>
+                        <Box textAlign="center">
+                            <CheckCircleOutlineOutlinedIcon sx={{ color: '#357a38', fontSize: 180 }} />
+                        </Box>
+
+                        <Typography
+                            variant="h3"
+                            sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#357a38' }}
+                        >
+                            ยืนยันวันนัดรับอุปกรณ์คืน
+                        </Typography>
+                        <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                            <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleClosePickup}>
+                                ย้อนกลับ
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="success"
+                                sx={{ marginLeft: 3, borderRadius: 100 }}
+                                onClick={handleAcceptPickup}
+                            >
+                                ยืนยัน
+                            </Button>
+                        </Box>
+                    </DialogContent>
                 </Dialog>
                 ;
             </Container>
@@ -325,7 +367,7 @@ const TrackingForm = () => {
                             }}
                             onClick={handleGetBack}
                         >
-                            ยืนยันการรับคืน
+                            เสร็จสิ้นกระบวนการส่งอุปกรณ์ไปฆ่าเชื้อ
                         </Button>
                     </Box>
                 </Box>

@@ -47,12 +47,14 @@ const Documents = () => {
     const [history, setHistory] = useState([]);
     const [openCheck, setOpenCheck] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
+    const [openEdit, setOpenEdit] = useState(false);
     const [track, setTrack] = useState(null);
     const [data, getFile] = useState({ name: '', path: '' });
     const [checkFile, setCheckFile] = useState(false);
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState('');
     const [filePath, setFilePath] = useState('');
+    const [deleteId, setDeleteId] = useState('');
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -109,9 +111,6 @@ const Documents = () => {
         {
             label: 'สาธารณสุขอำเภอบ้านโพธิ์',
             description: ``
-        },
-        {
-            label: 'เสร็จสิ้น'
         }
     ];
 
@@ -127,9 +126,32 @@ const Documents = () => {
         setActiveStepDoc(0);
     };
 
-    const handleDeleteEquipment = (row) => {
+    // เปิด Dialog การลบ
+    const handleDeleteDocument = (row) => {
         // setHistory(row);
+        setOpenDelete(true);
         console.log('row =>', row);
+        setDeleteId(row.code);
+    };
+    // ยืนยันการลบ
+    const handleDelete = () => {
+        let id = deleteId;
+        axios
+            .delete(`http://localhost:7000/document/${id}`)
+            .then((response) => {
+                setDeleteId(null);
+                setOpenDelete(false);
+                getData(user);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    };
+
+    // ปิด Dialog การลบ
+    const handleCloseDelete = () => {
+        setOpenDelete(false);
+        setDeleteId(null);
     };
     const handleDownloadFile = (event) => {
         event.preventDefault();
@@ -177,10 +199,10 @@ const Documents = () => {
                     <IconButton aria-label="check" onClick={() => handleCheck(row)}>
                         <VisibilityRoundedIcon />
                     </IconButton>
-                    <IconButton aria-label="edit" onClick={() => handleDeleteEquipment(row)}>
+                    <IconButton aria-label="edit" onClick={() => handleOpenEdit(row)}>
                         <EditIcon />
                     </IconButton>
-                    <IconButton aria-label="delete" color="error" size="small" onClick={() => handleDeleteEquipment(row)}>
+                    <IconButton aria-label="delete" color="error" size="small" onClick={() => handleDeleteDocument(row)}>
                         <DeleteIcon />
                     </IconButton>
                 </>
@@ -223,6 +245,13 @@ const Documents = () => {
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
         setPage(0);
+    };
+    // Edit
+    const handleOpenEdit = (row) => {
+        setOpenEdit(true);
+    };
+    const handleCloseEdit = () => {
+        setOpenEdit(false);
     };
     const handleEdit = (row) => {
         // Implement the edit logic
@@ -281,13 +310,12 @@ const Documents = () => {
                 file: fileName,
                 filePath: filePath,
                 name: user.user_firstname + ' ' + user.user_lastname,
-                hospital: user.hospital_id
+                hospital: user.hospital_id,
+                user_id: user.user_id
             })
             .then(function (response) {
                 const value = response.data;
-                if (value.status == 'ok') {
-                    window.location.reload();
-                }
+                getData(user);
             })
             .catch(function (error) {
                 console.log(error);
@@ -321,25 +349,6 @@ const Documents = () => {
 
     // Confirm delete
     const handleOpenDelete = () => {};
-
-    const handleCloseDelete = () => {};
-
-    const handleDelete = (row) => {
-        console.log('row');
-        // axios
-        //     .post('http://localhost:7000/document', {
-        //         topic: name,
-        //     })
-        //     .then(function (response) {
-        //         const value = response.data;
-        //         if (value.status == 'ok') {
-        //             //
-        //         }
-        //     })
-        //     .catch(function (error) {
-        //         console.log(error);
-        //     });
-    };
 
     const checkStepDocument = (value) => {
         let step = value;
@@ -469,7 +478,7 @@ const Documents = () => {
                                             {equipment.map((item, key) => (
                                                 <li key={key}>
                                                     {item.name} จำนวน: {item.detail} file: {item.file}
-                                                    <IconButton onClick={() => handleDeleteEquipment(key)} color="error" size="small">
+                                                    <IconButton onClick={() => handleDeleteDocument(key)} color="error" size="small">
                                                         <DeleteIcon />
                                                     </IconButton>
                                                 </li>
@@ -591,54 +600,50 @@ const Documents = () => {
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            <Grid container sx={{ marginTop: 2, backgroundColor: '#f2f2f2' }}>
-                                <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: '700' }}>ลำดับที่</Typography>
-                                </Grid>
-                                <Grid item xs={9}>
-                                    <Typography></Typography>
-                                </Grid>
-                            </Grid>
                             <Grid container>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: '700' }}>เลขที่เอกสาร</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>เลขที่เอกสาร</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography>{history.code}</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>{history.code}</Typography>
                                 </Grid>
                             </Grid>
-                            <Grid container sx={{ backgroundColor: '#f2f2f2' }}>
+                            <Grid container sx={{ marginTop: 2 }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: '700' }}>ผู้ส่ง</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>ผู้ส่ง</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography>{history.reporter}</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>{history.reporter}</Typography>
                                 </Grid>
                             </Grid>
-                            <Grid container>
+                            <Grid container sx={{ marginTop: 2 }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: '700' }}>วันที่ส่ง</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>วันที่ส่ง</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography>{history.date}</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>{history.date}</Typography>
                                 </Grid>
                             </Grid>
-                            <Grid container sx={{ backgroundColor: '#f2f2f2' }}>
+                            <Grid container sx={{ marginTop: 2 }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: '700' }}>ไฟล์เอกสาร</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>ไฟล์เอกสาร</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography>{history.documents}</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>{history.documents}</Typography>
                                 </Grid>
                             </Grid>
-                            <Grid container>
+                            <Grid container sx={{ marginTop: 2 }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: '700' }}>รายละเอียด</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>รายละเอียด</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}></Typography>
                                 </Grid>
                             </Grid>
-                            <Grid container sx={{ backgroundColor: '#f2f2f2' }}>
+                            {/* {history?.status == 0(<Typography sx={{ fontSize: '18px', fontWeight: '700' }}>แก้ไขเอกสาร</Typography>)} */}
+                            <Grid container sx={{ marginTop: 2 }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: '700' }}>สถานะการอนุมัติ</Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>สถานะการอนุมัติ</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
                                     <Stepper activeStep={activeStepDoc} orientation="vertical">
@@ -647,11 +652,10 @@ const Documents = () => {
                                                 <StepLabel>
                                                     <p style={{ fontSize: '16px' }}>{step.label}</p>
                                                     {/* {step.label} */}
-                                                    {/* {index} */}
-                                                    {/* {index == 1 ? 'Finish' : 'Continue'}
-                                            {index == 2 ? 'Finish' : 'Continue'}
-                                            {index == 3 ? 'Finish' : 'Continue'}
-                                            {index == 4 ? 'Finish' : 'Continue'} */}
+                                                    {/* {index == 0 ? 'อนุมัติ' : ''}
+                                                    {index == 1 ? 'อนุมัติ' : ''}
+                                                    {index == 2 ? 'อนุมัติ' : ''}
+                                                    {index == 3 ? 'อนุมัติ' : ''} */}
                                                 </StepLabel>
                                             </Step>
                                         ))}
@@ -659,19 +663,43 @@ const Documents = () => {
                                 </Grid>
                             </Grid>
                         </DialogContentText>
+                        {activeStepDoc > 0 && (
+                            <Grid container sx={{ marginTop: 3 }}>
+                                <Grid xs={3}>
+                                    <Typography>ประวัติการอนุมัติ</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    {activeStepDoc > 1 && (
+                                        <>
+                                            <Typography>ผู้อำนวยการโรงพยาบาล</Typography>
+                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
+                                        </>
+                                    )}
 
-                        <Grid container>
-                            <Grid xs={3}>
-                                <Typography>ประวัติการอนุมัติ</Typography>
+                                    {activeStepDoc > 2 && (
+                                        <>
+                                            <Typography>เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์</Typography>
+                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
+                                        </>
+                                    )}
+
+                                    {activeStepDoc > 3 && (
+                                        <>
+                                            <Typography>ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์</Typography>
+                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
+                                        </>
+                                    )}
+
+                                    {activeStepDoc >= 4 && (
+                                        <>
+                                            <Typography>สาธารณสุขอำเภอบ้านโพธิ์</Typography>
+                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
+                                        </>
+                                    )}
+                                </Grid>
                             </Grid>
-                            <Grid xs={9}>
-                                <Typography>ผู้อำนวยการโรงพยาบาล</Typography>
-                                <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
-                                <Typography>เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                                <Typography>ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                                <Typography>สาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                            </Grid>
-                        </Grid>
+                        )}
+
                         <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
                             <Button variant="outlined" color="error" onClick={handleCloseCheck}>
                                 ออก
@@ -686,28 +714,54 @@ const Documents = () => {
                             แน่ใจที่ต้องการจะลบเอกสารหรือไม่
                         </Typography>
                     </DialogTitle>
-                    <form onSubmit={handleDelete}>
-                        <DialogContent>
-                            <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
-                            <TextField
-                                margin="dense"
-                                id="comment"
-                                name="comment"
-                                label="กรอกรายละเอียดเพิ่มเติม"
-                                type="text"
-                                multiline
-                                rows={4}
-                                fullWidth
-                                variant="outlined"
-                            />
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleCloseDelete}>ยกเลิก</Button>
-                            <Button onClick={handleDelete} type="submit">
+                    <DialogContent>
+                        <Box textAlign="center">
+                            <ErrorIcon sx={{ color: '#ff0c34', fontSize: 180 }} />
+                        </Box>
+
+                        <Typography
+                            variant="h3"
+                            sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#ff0c34' }}
+                        >
+                            ยืนยันการลบเอกสาร
+                        </Typography>
+                        <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                            <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleCloseDelete}>
+                                ย้อนกลับ
+                            </Button>
+                            <Button variant="outlined" color="success" sx={{ marginLeft: 3, borderRadius: 100 }} onClick={handleDelete}>
                                 ยืนยัน
                             </Button>
-                        </DialogActions>
-                    </form>
+                        </Box>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={openEdit} fullWidth={true} maxWidth={'sm'}>
+                    <DialogTitle>
+                        <Typography variant="h3" sx={{ fontWeight: 500, color: 'red', textAlign: 'center' }}>
+                            แก้ไขเอกสาร
+                        </Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Box textAlign="center">
+                            <ErrorIcon sx={{ color: '#ff0c34', fontSize: 180 }} />
+                        </Box>
+
+                        <Typography
+                            variant="h3"
+                            sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#ff0c34' }}
+                        >
+                            ยืนยันการลบเอกสาร
+                        </Typography>
+                        <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                            <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleCloseDelete}>
+                                ย้อนกลับ
+                            </Button>
+                            <Button variant="outlined" color="success" sx={{ marginLeft: 3, borderRadius: 100 }} onClick={handleDelete}>
+                                ยืนยัน
+                            </Button>
+                        </Box>
+                    </DialogContent>
                 </Dialog>
             </Card>
         </div>
