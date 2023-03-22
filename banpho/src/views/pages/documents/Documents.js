@@ -663,7 +663,7 @@ const Documents = () => {
                                 </Grid>
                             </Grid>
                         </DialogContentText>
-                        {activeStepDoc > 0 && (
+                        {/* {activeStepDoc > 0 && (
                             <Grid container sx={{ marginTop: 3 }}>
                                 <Grid xs={3}>
                                     <Typography>ประวัติการอนุมัติ</Typography>
@@ -698,7 +698,7 @@ const Documents = () => {
                                     )}
                                 </Grid>
                             </Grid>
-                        )}
+                        )} */}
 
                         <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
                             <Button variant="outlined" color="error" onClick={handleCloseCheck}>
