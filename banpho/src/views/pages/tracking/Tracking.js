@@ -26,7 +26,9 @@ import {
     Stepper,
     Step,
     StepLabel,
-    Grid
+    Grid,
+    Select,
+    MenuItem
 } from '@mui/material';
 import axios from 'axios';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -37,6 +39,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 const Tracking = () => {
     const [user, setUser] = useState();
     const [rows, setRows] = useState([]);
+    const [item, setItem] = useState();
     const [showItem, setShowItem] = useState([]);
     const [open, setOpen] = useState(false);
     const [openCheck, setOpenCheck] = useState(false);
@@ -48,6 +51,7 @@ const Tracking = () => {
     const [history, setHistory] = useState([]);
     const [activeStep, setActiveStep] = useState(0);
     const [activeStepTracking, setActiveStepTracking] = useState(0);
+    const [selectedEquipment, setSelectedEquipment] = useState();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -64,9 +68,17 @@ const Tracking = () => {
             .get(`http://localhost:7000/tracking/${id}`)
             .then((response) => {
                 const value = response.data.data;
+                console.log(value);
                 setRows(
                     value.map((item, index) =>
-                        createData(index + 1, item.date_at, item.group_id, item.tracking_sender, item.tracking_status)
+                        createData(
+                            index + 1,
+                            item.date_at,
+                            item.group_id,
+                            item.tracking_sender,
+                            item.tracking_status,
+                            item.tracking_meet_date
+                        )
                     )
                 );
             })
@@ -91,12 +103,10 @@ const Tracking = () => {
                 let status = response.data.data[0].tracking_status;
                 if (status == 'จัดส่งอุปกรณ์และเครื่องมือ') {
                     setActiveStepTracking(1);
-                } else if (status == 'รอระบุวันนัดรับ') {
-                    setActiveStepTracking(2);
                 } else if (status == 'รับอุปกรณ์เรียบร้อย') {
-                    setActiveStepTracking(3);
+                    setActiveStepTracking(2);
                 } else if (status == 'เสร็จสิ้น') {
-                    setActiveStepTracking(4);
+                    setActiveStepTracking(3);
                 }
             })
             .catch((error) => {
@@ -127,6 +137,7 @@ const Tracking = () => {
         { id: 'track', label: 'รหัสชุด', minWidth: 100 },
         { id: 'sender', label: 'ผู้ส่ง', minWidth: 100 },
         { id: 'status', label: 'สถานะ', minWidth: 100 },
+        { id: 'dateGet', label: 'วันนัดรับอุปกรณ์', minWidth: 100 },
         {
             id: 'check',
             label: 'ตรวจสอบ',
@@ -149,9 +160,6 @@ const Tracking = () => {
             label: 'จัดส่งอุปกรณ์และเครื่องมือ'
         },
         {
-            label: 'รอระบุวันนัดรับ'
-        },
-        {
             label: 'รับอุปกรณ์เรียบร้อย'
         },
         {
@@ -160,9 +168,10 @@ const Tracking = () => {
     ];
 
     // นำค่าไปใส่ในตาราง
-    function createData(order, date, track, sender, status) {
+    function createData(order, date, track, sender, status, dateGet) {
         const formattedDate = moment(date).format('YYYY-MM-DD');
-        return { order, date: formattedDate, track, sender, status };
+        const formattedDateGet = dateGet === null ? '-' : moment(dateGet).format('YYYY-MM-DD');
+        return { order, date: formattedDate, track, sender, status, dateGet: formattedDateGet };
     }
 
     const handleChangePage = (event, newPage) => {
@@ -213,7 +222,7 @@ const Tracking = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault(); // prevent form submission
-        const name = event.target.elements.name.value;
+        const name = selectedEquipment;
         const quantity = event.target.elements.quantity.value;
 
         // ถ้ามีชื่ออุปกรณ์และจำนวนส่งมา
@@ -222,10 +231,8 @@ const Tracking = () => {
             setEquipment([...equipment, newEquipment]);
 
             // reset the form fields
-            event.target.elements.name.value = '';
+            setSelectedEquipment(null);
             event.target.elements.quantity.value = '';
-        } else {
-            // ไม่ทำอะไร
         }
     };
 
@@ -249,12 +256,14 @@ const Tracking = () => {
     };
 
     const handleNext = () => {
+        setSelectedEquipment(null);
         if (equipment.length > 0) {
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
         }
     };
 
     const handleBack = () => {
+        setSelectedEquipment(null);
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 
@@ -264,6 +273,11 @@ const Tracking = () => {
 
     const handleCloseConfirm = () => {
         setOpenConfirm(false);
+    };
+
+    const handleEquipmentChange = (event) => {
+        const value = event.target.value;
+        setSelectedEquipment(value);
     };
 
     return (
@@ -332,22 +346,28 @@ const Tracking = () => {
                             แบบฟอร์มการนำส่งอุปกรณ์-เครื่องมือการแพทย์
                         </Typography>
                     </DialogTitle>
-                    <DialogContent sx={{ marginTop: 5 }}>
+                    <DialogContent sx={{ marginTop: 3 }}>
                         {activeStep === 0 && (
                             <form onSubmit={handleSubmit}>
                                 <Typography variant="h3" sx={{ fontWeight: 500 }}>
                                     ชื่ออุปกรณ์ - เครื่องมือการแพทย์
                                 </Typography>
-                                <TextField
-                                    margin="dense"
+                                <Select
+                                    labelId="quantity-label"
                                     id="name"
                                     name="name"
-                                    type="text"
                                     fullWidth
-                                    placeholder="กรุณาระบุชื่อของอุปกรณ์การแพทย์"
+                                    value={selectedEquipment}
+                                    onChange={handleEquipmentChange}
                                     variant="outlined"
                                     sx={{ marginTop: '20px', marginBottom: '10px' }}
-                                />
+                                >
+                                    <MenuItem value="ชุดทำแผล A">ชุดทำแผล A</MenuItem>
+                                    <MenuItem value="ชุดทำแผล B">ชุดทำแผล B</MenuItem>
+                                    <MenuItem value="ชุดทำแผล C">ชุดทำแผล C</MenuItem>
+                                    <MenuItem value="ชุดทำฟัน A">ชุดทำฟัน A</MenuItem>
+                                    <MenuItem value="ชุดทำฟัน B">ชุดทำฟัน B</MenuItem>
+                                </Select>
                                 <Typography variant="h3" sx={{ fontWeight: 500 }}>
                                     จำนวนที่ต้องการส่ง
                                 </Typography>
@@ -508,32 +528,42 @@ const Tracking = () => {
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            <p style={{ fontSize: '18px', backgroundColor: '#f2f2f2', padding: 15 }}>ผู้ส่ง:{history.tracking_sender}</p>
-                            <p style={{ fontSize: '18px', padding: 15 }}>รหัสชุด: {history.group_id}</p>
-                            <p style={{ fontSize: '18px', backgroundColor: '#f2f2f2', padding: 15 }}>
+                            <p style={{ fontSize: '16px', backgroundColor: '#f2f2f2', padding: 15 }}>ผู้ส่ง:{history.tracking_sender}</p>
+                            <p style={{ fontSize: '16px', padding: 15 }}>รหัสชุด: {history.group_id}</p>
+                            <p style={{ fontSize: '16px', backgroundColor: '#f2f2f2', padding: 15 }}>
                                 วันที่ส่ง: {moment(history.date_at).format('YYYY-MM-DD')}
                             </p>
-                            <p style={{ fontSize: '18px', padding: 15 }}>อุปกรณ์ที่ส่ง:</p>
+                            <p style={{ fontSize: '16px', padding: 15 }}>อุปกรณ์ที่ส่ง:</p>
                             <ol>
                                 {showItem.map((item, key) => (
-                                    <li style={{ fontSize: '18px' }} key={key}>
+                                    <li style={{ fontSize: '16px' }} key={key}>
                                         {item.equipment_name} จำนวน: {item.equipment_quantity}
                                     </li>
                                 ))}
                             </ol>
-                            <p style={{ fontSize: '18px', backgroundColor: '#f2f2f2', padding: 15 }}>สถานะ: {history.tracking_status}</p>
-                            {/* <Stepper activeStep={activeStepTracking} orientation="vertical">
-                                {stepsTracking.map((step, index) => (
-                                    <Step key={step.label}>
-                                        <StepLabel>
-                                            <p style={{ fontSize: '16px' }}>{step.label}</p>
-                                        </StepLabel>
-                                    </Step>
-                                ))}
-                            </Stepper> */}
+                            <p style={{ fontSize: '16px', backgroundColor: '#f2f2f2', padding: 15 }}>สถานะ: {history.tracking_status}</p>
                             <Stepper activeStep={activeStepTracking} orientation="vertical" style={{ backgroundColor: 'white' }}>
                                 {stepsTracking.map((step, index) => (
-                                    <Step key={step.label}>
+                                    <Step
+                                        key={step.label}
+                                        sx={{
+                                            '& .MuiStepLabel-root .Mui-completed': {
+                                                color: 'success.main' // circle color (COMPLETED)
+                                            },
+                                            '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel': {
+                                                color: 'grey.500' // Just text label (COMPLETED)
+                                            },
+                                            '& .MuiStepLabel-root .Mui-active': {
+                                                color: 'success.main' // circle color (ACTIVE)
+                                            },
+                                            '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel': {
+                                                color: 'common.white' // Just text label (ACTIVE)
+                                            },
+                                            '& .MuiStepLabel-root .Mui-active .MuiStepIcon-text': {
+                                                fill: 'white' // circle's number (ACTIVE)
+                                            }
+                                        }}
+                                    >
                                         <StepLabel
                                             style={{
                                                 color: index === activeStepTracking ? '#086c3c' : 'gray',
@@ -542,6 +572,33 @@ const Tracking = () => {
                                         >
                                             {/* {index} , {activeStepTracking} */}
                                             {step.label}
+                                            {index == 1 ? (
+                                                <>
+                                                    {history.tracking_recipient != null ? (
+                                                        <>
+                                                            <br />
+                                                            <span style={{ color: 'red' }}>
+                                                                ผู้รับอุปกรณ์: {history.tracking_recipient}
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        ''
+                                                    )}
+                                                    {history.tracking_meet_date != null ? (
+                                                        <>
+                                                            <br />
+                                                            <span style={{ color: 'red' }}>
+                                                                วันนัดรับอุปกรณ์:
+                                                                {moment(history.tracking_meet_date).format('YYYY-MM-DD')}
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        ''
+                                                    )}
+                                                </>
+                                            ) : (
+                                                ''
+                                            )}
                                         </StepLabel>
                                     </Step>
                                 ))}

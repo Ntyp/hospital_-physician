@@ -55,6 +55,8 @@ const Documents = () => {
     const [fileName, setFileName] = useState('');
     const [filePath, setFilePath] = useState('');
     const [deleteId, setDeleteId] = useState('');
+    const [editCode, setEditCode] = useState('');
+    const [statusDoc, setStatusDoc] = useState('');
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -211,7 +213,7 @@ const Documents = () => {
     ];
 
     function createData(order, date, code, topic, detail, documents, reporter, description, status) {
-        const formattedDate = moment(date).format('YYYY-MM-DD');
+        const formattedDate = `${moment(date).format('YYYY-MM-DD')}`;
         const downloadLink = documents ? (
             <a href="" onClick={handleDownloadFile}>
                 เอกสาร
@@ -248,13 +250,58 @@ const Documents = () => {
     };
     // Edit
     const handleOpenEdit = (row) => {
+        console.log('row', row);
+        let code = row.code;
+        setEditCode(code);
         setOpenEdit(true);
     };
     const handleCloseEdit = () => {
         setOpenEdit(false);
+        setEditCode(null);
+    };
+    const handleSubmitEdit = (event) => {
+        event.preventDefault(); // prevent form submission
+        const code = editCode;
+        const name = event.target.elements.name.value;
+        const detail = event.target.elements.detail.value;
+        const file = fileName;
+        // ถ้ามีชื่ออุปกรณ์และจำนวนส่งมา
+        if (name && file) {
+            const newValue = { code, name, detail, file };
+            setValue([...value, newValue]);
+        }
+        event.target.elements.name.value = '';
+        event.target.elements.detail.value = '';
+        // setFile(null);
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
     const handleEdit = (row) => {
         // Implement the edit logic
+    };
+
+    const handleSaveFormEdit = () => {
+        let id = editCode; // เลข Track ที่นำมา Update
+        axios
+            .put(`http://localhost:7000/document/${id}`, {
+                title: value[0].name,
+                detail: value[0].detail,
+                file: fileName,
+                filePath: filePath,
+                name: user.user_firstname + ' ' + user.user_lastname,
+                hospital: user.hospital_id,
+                user_id: user.user_id
+            })
+            .then(function (response) {
+                const value = response.data;
+                getData(user);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        setOpenEdit(false);
+        setEditCode(null);
+        setActiveStep(0);
+        setValue([]);
     };
 
     const handleClickOpen = () => {
@@ -330,7 +377,7 @@ const Documents = () => {
         console.log('row =>', row);
         let status = row.status;
         setActiveStepDoc(status - 1);
-
+        setStatusDoc(status);
         // setActiveStepDoc;
         // console.log(status);
         // console.log('activeStepDoc =>', activeStepDoc);
@@ -340,6 +387,7 @@ const Documents = () => {
 
     const handleCloseCheck = () => {
         setOpenCheck(false);
+        setStatusDoc(null);
     };
 
     const checkStep = () => {
@@ -646,9 +694,28 @@ const Documents = () => {
                                     <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>สถานะการอนุมัติ</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Stepper activeStep={activeStepDoc} orientation="vertical">
+                                    <Stepper activeStep={activeStepDoc} orientation="vertical" sx={{ marginTop: 3 }}>
                                         {stepsDocuments.map((step, index) => (
-                                            <Step key={step.label}>
+                                            <Step
+                                                key={step.label}
+                                                sx={{
+                                                    '& .MuiStepLabel-root .Mui-completed': {
+                                                        color: 'success.main' // circle color (COMPLETED)
+                                                    },
+                                                    '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel': {
+                                                        color: 'grey.500' // Just text label (COMPLETED)
+                                                    },
+                                                    '& .MuiStepLabel-root .Mui-active': {
+                                                        color: 'success.main' // circle color (ACTIVE)
+                                                    },
+                                                    '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel': {
+                                                        color: 'common.white' // Just text label (ACTIVE)
+                                                    },
+                                                    '& .MuiStepLabel-root .Mui-active .MuiStepIcon-text': {
+                                                        fill: 'white' // circle's number (ACTIVE)
+                                                    }
+                                                }}
+                                            >
                                                 <StepLabel>
                                                     <p style={{ fontSize: '16px' }}>{step.label}</p>
                                                     {/* {step.label} */}
@@ -736,17 +803,13 @@ const Documents = () => {
                     </DialogContent>
                 </Dialog>
 
-                <Dialog open={openEdit} fullWidth={true} maxWidth={'sm'}>
-                    <DialogTitle>
-                        <Typography variant="h3" sx={{ fontWeight: 500, color: 'red', textAlign: 'center' }}>
-                            แก้ไขเอกสาร
+                <Dialog open={openEdit} onClose={handleCloseEdit} fullWidth={true} maxWidth={'sm'}>
+                    <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
+                            แบบฟอร์มการแก้ไขเอกสาร
                         </Typography>
                     </DialogTitle>
-                    <DialogContent>
-                        <Box textAlign="center">
-                            <ErrorIcon sx={{ color: '#ff0c34', fontSize: 180 }} />
-                        </Box>
-
+                    {/* <DialogContent>
                         <Typography
                             variant="h3"
                             sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#ff0c34' }}
@@ -754,13 +817,168 @@ const Documents = () => {
                             ยืนยันการลบเอกสาร
                         </Typography>
                         <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                            <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleCloseDelete}>
+                            <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleCloseEdit}>
                                 ย้อนกลับ
                             </Button>
-                            <Button variant="outlined" color="success" sx={{ marginLeft: 3, borderRadius: 100 }} onClick={handleDelete}>
+                            <Button variant="outlined" color="success" sx={{ marginLeft: 3, borderRadius: 100 }} onClick={handleEdit}>
                                 ยืนยัน
                             </Button>
                         </Box>
+                    </DialogContent> */}
+                    <DialogContent>
+                        {activeStep === 0 && (
+                            <form onSubmit={handleSubmit}>
+                                {/* editCode */}
+                                <Typography sx={{ marginTop: 3, fontSize: '16px' }}>รหัสเอกสาร:{editCode}</Typography>
+                                <Typography sx={{ marginTop: 3, fontSize: '16px' }}>ชื่อหัวข้อ</Typography>
+                                <TextField
+                                    margin="dense"
+                                    id="name"
+                                    name="name"
+                                    placeholder="ระบุหัวข้อของเอกสาร"
+                                    type="text"
+                                    fullWidth
+                                    variant="outlined"
+                                />
+                                <Typography sx={{ marginTop: 3, fontSize: '16px', display: 'inline-block' }}>
+                                    รายละเอียด{' '}
+                                    <Typography sx={{ color: '#ff0c34', fontSize: '16px', display: 'inline-block' }}>(*ถ้ามี)</Typography>
+                                </Typography>
+
+                                <TextField
+                                    margin="dense"
+                                    id="detail"
+                                    name="detail"
+                                    placeholder="ระบุรายละเอียด"
+                                    multiline
+                                    rows={4}
+                                    type="text"
+                                    fullWidth
+                                    variant="outlined"
+                                    sx={{ marginTop: 2 }}
+                                />
+                                <p>
+                                    แนบไฟล์เอกสาร:
+                                    {file ? <span> {file.name}</span> : <span> No file selected</span>}
+                                    {file ? (
+                                        ''
+                                    ) : (
+                                        <Button variant="contained" component="label" sx={{ marginLeft: '20px' }}>
+                                            เลือกไฟล์เอกสาร
+                                            <input type="file" id="file" name="file" hidden onChange={handleFileChange} />
+                                        </Button>
+                                    )}
+                                    {file ? (
+                                        <Button variant="contained" component="label" sx={{ marginLeft: '20px' }} onClick={uploadFile}>
+                                            อัพโหลดไฟล์เอกสาร
+                                        </Button>
+                                    ) : (
+                                        ''
+                                    )}
+                                </p>
+                                {checkFile ? (
+                                    <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                        <Button variant="outlined" color="error" onClick={handleClose}>
+                                            ยกเลิก
+                                        </Button>
+                                        <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} type="submit">
+                                            ต่อไป
+                                        </Button>
+                                    </Box>
+                                ) : (
+                                    ''
+                                )}
+                            </form>
+                        )}
+                        {activeStep === 1 && (
+                            <>
+                                {value.map((item, key) => (
+                                    <div key={key}>
+                                        <Grid container>
+                                            <Grid xs={3}>
+                                                <Typography sx={{ fontWeight: 700, marginTop: '20px', fontSize: '16px' }}>
+                                                    รหัสเอกสาร
+                                                </Typography>
+                                            </Grid>
+                                            <Grid xs={9}>
+                                                <Typography sx={{ marginTop: '20px', fontSize: '16px' }}>{editCode}</Typography>
+                                            </Grid>
+                                            <Grid xs={3}>
+                                                <Typography sx={{ fontWeight: 700, marginTop: '20px', fontSize: '16px' }}>
+                                                    ชื่อหัวข้อ
+                                                </Typography>
+                                            </Grid>
+                                            <Grid xs={9}>
+                                                <Typography sx={{ marginTop: '20px', fontSize: '16px' }}>{item.name}</Typography>
+                                            </Grid>
+                                        </Grid>
+                                        <Grid container>
+                                            <Grid xs={3}>
+                                                <Typography
+                                                    sx={{ marginTop: 3, fontSize: '16px', display: 'inline-block', fontWeight: 700 }}
+                                                >
+                                                    รายละเอียด{' '}
+                                                    <Typography
+                                                        sx={{
+                                                            color: '#ff0c34',
+                                                            fontSize: '16px',
+                                                            display: 'inline-block',
+                                                            fontWeight: 700
+                                                        }}
+                                                    >
+                                                        (*ถ้ามี)
+                                                    </Typography>
+                                                </Typography>
+                                            </Grid>
+                                            <Grid xs={9}>
+                                                <Typography sx={{ marginTop: '20px', fontSize: '16px' }}>{item.detail}</Typography>
+                                            </Grid>
+                                        </Grid>
+                                        <Grid container>
+                                            <Grid xs={3}>
+                                                <Typography sx={{ fontWeight: 700, fontSize: '16px', marginTop: '20px' }}>
+                                                    แนบไฟล์เอกสาร
+                                                </Typography>
+                                            </Grid>
+                                            <Grid xs={9}>
+                                                <Typography sx={{ marginTop: '20px', fontSize: '16px', textDecoration: 'underline' }}>
+                                                    {item.file}
+                                                </Typography>
+                                            </Grid>
+                                        </Grid>
+                                    </div>
+                                ))}
+                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                    <Button variant="outlined" color="error" onClick={handleClose}>
+                                        ยกเลิก
+                                    </Button>
+                                    <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} onClick={handleNext}>
+                                        ต่อไป
+                                    </Button>
+                                </Box>
+                            </>
+                        )}
+                        {activeStep === 2 && (
+                            <>
+                                <Box textAlign="center">
+                                    <ErrorIcon sx={{ color: '#ff0c34', fontSize: 180 }} />
+                                </Box>
+                                <Typography
+                                    variant="h3"
+                                    sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#ff0c34' }}
+                                >
+                                    ยืนยันการส่งข้อมูลแก้ไขเอกสาร
+                                </Typography>
+                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                    <Button variant="outlined" color="error" onClick={handleClose}>
+                                        ยกเลิก
+                                    </Button>
+                                    <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} onClick={handleSaveFormEdit}>
+                                        ยืนยัน
+                                    </Button>
+                                </Box>
+                            </>
+                        )}
                     </DialogContent>
                 </Dialog>
             </Card>

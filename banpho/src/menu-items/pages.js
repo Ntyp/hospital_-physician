@@ -11,7 +11,9 @@ import {
     IconUserExclamation,
     IconClipboardText,
     IconCar,
-    IconFlask
+    IconFlask,
+    IconHomeSignal,
+    IconFileOff
 } from '@tabler/icons';
 
 const icons = {
@@ -26,7 +28,9 @@ const icons = {
     IconUserExclamation,
     IconClipboardText,
     IconCar,
-    IconFlask
+    IconFlask,
+    IconHomeSignal,
+    IconFileOff
 };
 // const userData = localStorage.getItem('user_data');
 // const user = JSON.parse(userData);
@@ -83,14 +87,40 @@ if (role === 'hospital staff') {
                     id: 'dashboard-document',
                     title: 'Dashboard',
                     type: 'item',
+                    icon: icons.IconHomeSignal,
+                    IconFileOff,
                     url: '/dashboard-document',
+                    target: true
+                },
+                // {
+                //     id: 'documents',
+                //     title: 'การนำส่งเอกสาร',
+                //     type: 'item',
+                //     url: '/documents',
+                //     target: true
+                // },
+                {
+                    id: 'documents',
+                    title: 'รอการอนุมัติ',
+                    type: 'item',
+                    icon: icons.IconFileDescription,
+                    url: '/documents',
                     target: true
                 },
                 {
                     id: 'documents',
-                    title: 'การนำส่งเอกสาร',
+                    title: 'ไม่อนุมัติ',
                     type: 'item',
-                    url: '/documents',
+                    icon: icons.IconFileX,
+                    url: '/documents-disapprove',
+                    target: true
+                },
+                {
+                    id: 'documents',
+                    title: 'อนุมัติเรียบร้อย',
+                    type: 'item',
+                    icon: icons.IconFileCheck,
+                    url: '/documents-approve',
                     target: true
                 }
             ]

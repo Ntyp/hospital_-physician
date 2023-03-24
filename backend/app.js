@@ -225,31 +225,44 @@ app.put("/tracking/:id", jsonParser, (req, res) => {
   const id = [req.params["id"]]; // group_id ที่ส่งไป
   const tracking_recipient = req.body.recipient;
   const tracking_meet = req.body.date; // วันนัดรับ
-  if (tracking_meet) {
-    connection.query(
-      "UPDATE tracking SET tracking_recipient = ?, tracking_meet_date = ?,tracking_status = ? WHERE group_id = ?",
-      [tracking_recipient, tracking_meet, "รับสินค้าเรียบร้อย", id],
-      function (err, results) {
-        if (err) {
-          res.json({ status: "error", message: err });
-          return;
-        }
-        res.json({ status: "ok" });
+  connection.query(
+    "UPDATE tracking SET tracking_recipient = ?, tracking_meet_date = ?,tracking_status = ? WHERE group_id = ?",
+    [tracking_recipient, tracking_meet, "รับอุปกรณ์ฆ่าเชื้อเรียบร้อย", id],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
       }
-    );
-  } else {
-    connection.query(
-      "UPDATE tracking SET tracking_recipient = ?,tracking_status = ? WHERE group_id = ?",
-      [tracking_recipient, "รอระบุวันนัดรับ", id],
-      function (err, results) {
-        if (err) {
-          res.json({ status: "error", message: err });
-          return;
+      // ค้นหาว่าไอดีtrackนี้เป็นของรพ.อะไร
+      connection.query(
+        "SELECT * FROM tracking WHERE group_id = ? ",
+        [id],
+        function (err, results) {
+          if (err) {
+            res.json({ status: "error", message: err });
+            return;
+          }
+          // ส่งNotification แจ้งเตือนว่านัดรับวันนี้นะ
+          const created_at = moment().format("YYYY-MM-DD HH:mm:ss");
+          const title_notification = `รับอุปกรณ์ฆ่าเชื้อสำเร็จกรุณามารับอุปกรณ์ฆ่าเชื้อในวันที่ ${tracking_meet}`;
+          const status_unread = 0;
+          const role = 1;
+          const hospital_id = results[0].hospital_id;
+          connection.query(
+            "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
+            [created_at, title_notification, status_unread, role, hospital_id],
+            function (err, results) {
+              if (err) {
+                res.json({ status: "error", message: err });
+                return;
+              }
+              return res.json({ status: "ok" });
+            }
+          );
         }
-        res.json({ status: "ok" });
-      }
-    );
-  }
+      );
+    }
+  );
 });
 
 app.put("/tracking-date/:id", jsonParser, (req, res) => {
@@ -879,10 +892,96 @@ app.post("/disapprove/:id", jsonParser, (req, res) => {
 // แก้ไขคำร้อง
 app.put("/document/:id", jsonParser, (req, res) => {
   const id = [req.params["id"]];
-  const topic = req.body.topic;
-  const detail = req.body.detail;
+  const title = req.body.title; //หัวข้อใหม่
+  const detail = req.body.detail; //รายละเอียด
   const file = req.body.file;
-  const version = req.body.version;
+  const file_path = req.body.filePatch;
+  const hospital = req.body.hospital;
+  const status_new = 1;
+  const time_now = moment().format("YYYY-MM-DD HH:mm:ss");
+  const create_by = req.body.name;
+  const update_by = 1;
+  // หา version ก่อน
+  connection.query(
+    "SELECT * FROM document WHERE document_code = ?",
+    [id],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      const version = results[0].document_version + 1;
+      connection.query(
+        "UPDATE document SET document_title = ?,document_detail = ?,document_file = ?,document_file_path = ?,document_version = ?,document_status = ?,approve_1 = ?,approve_2 = ?,approve_3 = ?,approve_4 = ?,created_at = ?,created_by = ?,updated_by = ?,updated_at = ? WHERE document_code = ?",
+        [
+          title,
+          detail,
+          file,
+          file_path,
+          version,
+          status_new,
+          null,
+          null,
+          null,
+          null,
+          time_now,
+          create_by,
+          update_by,
+          time_now, //เอาเวลาล่าสุด
+          id,
+        ],
+        function (err, results) {
+          if (err) {
+            res.json({ status: "error", message: err });
+            return;
+          }
+          const status_approve = 1; //ล้างสถานะที่ approve
+          connection.query(
+            "DELETE FROM approval WHERE document_id = ? AND approval_status = ?",
+            [id, status_approve],
+            function (err, results) {
+              if (err) {
+                res.json({ status: "error", message: err });
+                return;
+              }
+              const status_unread = 0;
+              const title_notification = "มีการเอกสารที่รอการอนุมัติ";
+              const user_role = 2; //role ผู้อำนวยการรพ.
+              connection.query(
+                "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
+                [
+                  time_now,
+                  title_notification,
+                  status_unread,
+                  user_role,
+                  hospital,
+                ],
+                function (err, results) {
+                  if (err) {
+                    res.json({ status: "error", message: err });
+                    return;
+                  }
+                  return res.json({ status: "ok" });
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+
+  // ต้องมีการเก็บค่าเมื่อไม่อนุมัติ
+
+  // UPDATE document SET document_title = ?,document_detail = ?,document_file = ?,document_file_path = ?,document_version = ?,document_status = ?,approve_1 = ?,approve_2 = ?,approve_3 = ?,approve_4 = ?,create_at = ?,create_by = ?,update_by = ?
+
+  // ส่งNotification
+
+  //
+  // const topic = req.body.topic;
+  // const detail = req.body.detail;
+  // const file = req.body.file;
+  // const version = req.body.version;
 
   // แก้ไขแล้วต้องเคลียค่าการอนุมัติทั้งหมด
 

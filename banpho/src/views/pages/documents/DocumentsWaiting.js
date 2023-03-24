@@ -166,6 +166,7 @@ const DocumentsWaiting = () => {
             .then(function (response) {
                 const value = response.data;
                 if (value.status == 'ok') {
+                    getData(user);
                     setOpenDisapprove(false);
                     console.log('update status success');
                 }
@@ -190,6 +191,7 @@ const DocumentsWaiting = () => {
                 console.log(response);
                 const value = response.data;
                 if (value.status == 'ok') {
+                    getData(user);
                     setOpenApprove(false);
                     console.log('update status success');
                 }
