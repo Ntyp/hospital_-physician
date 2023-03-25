@@ -44,9 +44,11 @@ const Login = () => {
                     console.log('value', value);
                     localStorage.setItem('user_data', JSON.stringify(value.data[0]));
                     if (value.data[0].user_role == 'hospital staff') {
-                        navigate('/home');
+                        // navigate('/home');
+                        window.location.href = 'http://localhost:3000/home';
                     } else {
-                        navigate('/');
+                        // navigate('/');
+                        window.location.href = 'http://localhost:3000/';
                     }
                 } else {
                     console.log('error');

@@ -36,6 +36,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import EditIcon from '@mui/icons-material/Edit';
 
 const DocumentsDisapproveUser = () => {
+    const [document, setDocument] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
     const [open, setOpen] = useState(false);
@@ -57,6 +58,9 @@ const DocumentsDisapproveUser = () => {
     const [deleteId, setDeleteId] = useState('');
     const [editCode, setEditCode] = useState('');
     const [statusDoc, setStatusDoc] = useState('');
+    const [version, setVersion] = useState(1);
+    const [approver, setApprover] = useState([]);
+    const [disapprover, setDisApprover] = useState([]);
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -96,20 +100,16 @@ const DocumentsDisapproveUser = () => {
 
     const stepsDocuments = [
         {
-            label: 'ผู้อำนวยการโรงพยาบาล',
-            description: ''
+            label: 'ผู้อำนวยการโรงพยาบาล'
         },
         {
-            label: 'เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์',
-            description: ''
+            label: 'เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์'
         },
         {
-            label: 'ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์',
-            description: ``
+            label: 'ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์'
         },
         {
-            label: 'สาธารณสุขอำเภอบ้านโพธิ์',
-            description: ``
+            label: 'สาธารณสุขอำเภอบ้านโพธิ์'
         }
     ];
 
@@ -159,7 +159,7 @@ const DocumentsDisapproveUser = () => {
     const columns = [
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
         { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
-        { id: 'code', label: 'รหัส', minWidth: 100 },
+        { id: 'code', label: 'เลขที่เอกสาร', minWidth: 100 },
         { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
         { id: 'reporter', label: 'ผู้ส่ง', minWidth: 100 },
         {
@@ -363,27 +363,68 @@ const DocumentsDisapproveUser = () => {
         setHistory(row);
         console.log('row =>', row);
         let status = row.status;
+        console.log(row.code);
+        getDataDocument(row.code);
         setActiveStepDoc(status - 1);
         setStatusDoc(status);
         setOpenCheck(true);
     };
 
+    function getDataDocument(value) {
+        const id = value;
+        axios
+            .get(`http://localhost:7000/document-detail/${id}`)
+            .then((response) => {
+                console.log('eiei', response.data.data[0]);
+                let value = response.data.data[0];
+                let code = value.document_code;
+                let version = value.document_version;
+                setDocument(value);
+                getApprover(code, version);
+                getDisapprove(code);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
+    function getApprover(value, value1) {
+        const code = value; //document_code
+        const version = value1; //document_version
+        axios
+            .get(`http://localhost:7000/documents-get-approver/${code}/${version}`)
+            .then((response) => {
+                if (response) {
+                    let value = response.data.data;
+                    setApprover(value);
+                    console.log('getApprover', response.data.data);
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
+    function getDisapprove(value) {
+        const code = value;
+        axios
+            .get(`http://localhost:7000/documents-get-disapprover/${code}`)
+            .then((response) => {
+                if (response) {
+                    let value = response.data.data;
+                    setDisApprover(value);
+                    console.log('getDisApprover', response.data.data);
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
     const handleCloseCheck = () => {
         setOpenCheck(false);
+        setDocument(null);
         setStatusDoc(null);
-    };
-
-    const checkStep = () => {
-        // setActiveStepDoc((prevActiveStep) => prevActiveStep + 1);
-        //
-    };
-
-    // Confirm delete
-    const handleOpenDelete = () => {};
-
-    const checkStepDocument = (value) => {
-        let step = value;
-        // setActiveStepDoc((prevActiveStep) => prevActiveStep + 1);
     };
 
     return (
@@ -404,8 +445,10 @@ const DocumentsDisapproveUser = () => {
                         padding: '30px'
                     }}
                 >
+                    {/* แสดงตาราง */}
                     <TableContainer sx={{ maxHeight: 440 }}>
                         <Table stickyHeader aria-label="sticky table">
+                            {/* หัวข้อ Column */}
                             <TableHead>
                                 <TableRow>
                                     {columns.map((column) => (
@@ -415,6 +458,7 @@ const DocumentsDisapproveUser = () => {
                                     ))}
                                 </TableRow>
                             </TableHead>
+                            {/* เนื้อหาภายใน */}
                             <TableBody>
                                 {rows.map((row) => (
                                     <TableRow key={row.order}>
@@ -428,6 +472,7 @@ const DocumentsDisapproveUser = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
+                    {/* ตัวจัดการหน้าของตาราง */}
                     <TablePagination
                         rowsPerPageOptions={[10, 25, 100]}
                         component="div"
@@ -438,6 +483,8 @@ const DocumentsDisapproveUser = () => {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </Paper>
+
+                {/* กดสร้างเอกสาร */}
                 <Dialog maxWidth={'sm'} fullWidth={true} open={open} onClose={handleClose}>
                     <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
                         <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
@@ -609,6 +656,8 @@ const DocumentsDisapproveUser = () => {
                         )}
                     </DialogContent>
                 </Dialog>
+
+                {/* กดดวงตาตรวจสอบข้อมูลของเอกสาร */}
                 <Dialog
                     fullWidth={true}
                     maxWidth={'sm'}
@@ -625,49 +674,72 @@ const DocumentsDisapproveUser = () => {
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
                             <Grid container>
-                                <Grid item xs={3}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>เลขที่เอกสาร</Typography>
-                                </Grid>
-                                <Grid item xs={9}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>{history.code}</Typography>
-                                </Grid>
-                            </Grid>
-                            <Grid container sx={{ marginTop: 2 }}>
-                                <Grid item xs={3}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>ผู้ส่ง</Typography>
-                                </Grid>
-                                <Grid item xs={9}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>{history.reporter}</Typography>
+                                <Grid item xs={12}>
+                                    {document?.document_version > 1 ? (
+                                        <>
+                                            <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#ff0c34' }}>
+                                                แก้ไขครั้งที่: {document?.document_version - 1}
+                                            </Typography>
+                                        </>
+                                    ) : (
+                                        ''
+                                    )}
                                 </Grid>
                             </Grid>
-                            <Grid container sx={{ marginTop: 2 }}>
+                            <Grid container sx={{ marginTop: 3, padding: '15px' }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>วันที่ส่ง</Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>เลขที่เอกสาร</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>{history.date}</Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>{history.code}</Typography>
                                 </Grid>
                             </Grid>
-                            <Grid container sx={{ marginTop: 2 }}>
+
+                            <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>ไฟล์เอกสาร</Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>ผู้ส่ง</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>{history.documents}</Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>{history.reporter}</Typography>
                                 </Grid>
                             </Grid>
-                            <Grid container sx={{ marginTop: 2 }}>
+
+                            <Grid container sx={{ padding: '15px' }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>รายละเอียด</Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>วันที่ส่ง</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}></Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                        {moment(history.date).format('DD-MM-YYYY')}
+                                    </Typography>
                                 </Grid>
                             </Grid>
-                            {/* {history?.status == 0(<Typography sx={{ fontSize: '18px', fontWeight: '700' }}>แก้ไขเอกสาร</Typography>)} */}
-                            <Grid container sx={{ marginTop: 2 }}>
+
+                            <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontSize: '18px', fontWeight: '700' }}>สถานะการอนุมัติ</Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>ไฟล์เอกสาร</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                        {document?.document_file}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Grid container sx={{ padding: '15px' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>รายละเอียด</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                        {document?.document_detail}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>สถานะการอนุมัติ</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
                                     <Stepper activeStep={activeStepDoc} orientation="vertical" sx={{ marginTop: 3 }}>
@@ -694,57 +766,143 @@ const DocumentsDisapproveUser = () => {
                                             >
                                                 <StepLabel>
                                                     <p style={{ fontSize: '16px' }}>{step.label}</p>
-                                                    {activeStepDoc == index ? 'ไม่อนุมัติ' : ''}
+                                                    {activeStepDoc == index ? 'รอการอนุมัติ' : ''}
                                                     {activeStepDoc > index ? 'ผ่านการอนุมัติ' : ''}
-
-                                                    {/* {step.label} */}
-                                                    {/* {index == 0 ? 'อนุมัติ' : ''}
-                                                    {index == 1 ? 'อนุมัติ' : ''}
-                                                    {index == 2 ? 'อนุมัติ' : ''}
-                                                    {index == 3 ? 'อนุมัติ' : ''} */}
                                                 </StepLabel>
                                             </Step>
                                         ))}
                                     </Stepper>
                                 </Grid>
                             </Grid>
-                        </DialogContentText>
-                        {/* {activeStepDoc > 0 && (
-                            <Grid container sx={{ marginTop: 3 }}>
-                                <Grid xs={3}>
-                                    <Typography>ประวัติการอนุมัติ</Typography>
+                            {activeStepDoc > 0 && (
+                                <>
+                                    <Grid container sx={{ padding: '15px' }}>
+                                        <Grid item xs={3}>
+                                            <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                                ประวัติการอนุมัติ
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={9}>
+                                            <Typography sx={{ fontSize: '16px', color: '#086c3c' }}>ผู้อำนวยการโรงพยาบาล</Typography>
+                                            <Typography sx={{ fontSize: '14px', marginLeft: 4 }}>
+                                                <span style={{ color: '#086c3c' }}>• ผ่านการอนุมัติ</span>
+                                                <span style={{ marginLeft: '15px' }}>คุณ: {approver[0]?.approver_name}</span>
+                                                <br />
+                                                <span>
+                                                    [{moment(approver[0]?.created_at).format('DD-MM-YYYY')} เวลา:{' '}
+                                                    {moment(approver[0]?.created_at).format('HH:mm')}]
+                                                </span>
+                                            </Typography>
+                                            {activeStepDoc > 1 && (
+                                                <>
+                                                    <Typography sx={{ fontSize: '16px', color: '#086c3c', marginTop: 2 }}>
+                                                        เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์
+                                                    </Typography>
+                                                    <Typography sx={{ fontSize: '14px', marginLeft: 4 }}>
+                                                        <span style={{ color: '#086c3c' }}>• ผ่านการอนุมัติ</span>
+                                                        <span style={{ marginLeft: '15px' }}>คุณ: {approver[1]?.approver_name}</span>
+                                                        <br />
+                                                        <span>
+                                                            [{moment(approver[1]?.created_at).format('DD-MM-YYYY')} เวลา:{' '}
+                                                            {moment(approver[1]?.created_at).format('HH:mm')}]
+                                                        </span>
+                                                    </Typography>
+                                                </>
+                                            )}
+
+                                            {activeStepDoc > 2 && (
+                                                <>
+                                                    <Typography sx={{ fontSize: '16px', color: '#086c3c', marginTop: 2 }}>
+                                                        ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์
+                                                    </Typography>
+                                                    <Typography sx={{ fontSize: '14px', marginLeft: 4 }}>
+                                                        <span style={{ color: '#086c3c', marginLeft: 4 }}>• ผ่านการอนุมัติ</span>
+                                                        <span style={{ marginLeft: '15px' }}>คุณ: {approver[2]?.approver_name}</span>
+                                                        <br />
+                                                        <span>
+                                                            [{moment(approver[2]?.created_at).format('DD-MM-YYYY')} เวลา:{' '}
+                                                            {moment(approver[2]?.created_at).format('HH:mm')}]
+                                                        </span>
+                                                    </Typography>
+                                                </>
+                                            )}
+
+                                            {activeStepDoc > 3 && (
+                                                <>
+                                                    <Typography sx={{ fontSize: '16px', color: '#086c3c', marginTop: 2 }}>
+                                                        สาธารณสุขอำเภอบ้านโพธิ์
+                                                    </Typography>
+                                                    <Typography>
+                                                        <span style={{ color: '#086c3c', marginLeft: 4 }}>• ผ่านการอนุมัติ</span>
+                                                        <span style={{ marginLeft: '15px' }}>คุณ: {approver[3]?.approver_name}</span>
+                                                        <br />
+                                                        <span>
+                                                            [{moment(approver[3]?.created_at).format('DD-MM-YYYY')} เวลา:{' '}
+                                                            {moment(approver[3]?.created_at).format('HH:mm')}]
+                                                        </span>
+                                                    </Typography>
+                                                </>
+                                            )}
+                                        </Grid>
+                                    </Grid>
+                                </>
+                            )}
+
+                            <Grid container sx={{ padding: '15px' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#ff0c34' }}>
+                                        ประวัติการไม่อนุมัติ
+                                    </Typography>
                                 </Grid>
-                                <Grid xs={9}>
-                                    {activeStepDoc > 1 && (
+                                <Grid item xs={9}>
+                                    {disapprover.map((item, key) => (
                                         <>
-                                            <Typography>ผู้อำนวยการโรงพยาบาล</Typography>
-                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
+                                            {item.approver_id === 2 && (
+                                                <>
+                                                    <Typography sx={{ fontSize: '16px', color: '#086c3c' }}>
+                                                        ผู้อำนวยการโรงพยาบาล
+                                                    </Typography>
+                                                </>
+                                            )}
+                                            {item.approver_id === 3 && (
+                                                <>
+                                                    <Typography sx={{ fontSize: '16px', color: '#086c3c' }}>
+                                                        เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์
+                                                    </Typography>
+                                                </>
+                                            )}
+                                            {item.approver_id === 4 && (
+                                                <>
+                                                    <Typography sx={{ fontSize: '16px', color: '#086c3c' }}>
+                                                        ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์
+                                                    </Typography>
+                                                </>
+                                            )}
+                                            {item.approver_id === 5 && (
+                                                <>
+                                                    <Typography sx={{ fontSize: '16px', color: '#086c3c' }}>
+                                                        สาธารณสุขอำเภอบ้านโพธิ์
+                                                    </Typography>
+                                                </>
+                                            )}
+                                            <Typography sx={{ fontSize: '14px' }}>
+                                                <span style={{ color: '#ff0c34', marginLeft: '15px' }}>• ไม่ผ่านการอนุมัติ</span>
+                                                <span style={{ marginLeft: '15px' }}>({item?.approver_name})</span>
+                                                <br />
+                                                <span style={{ color: '#ff0c34', marginLeft: '15px' }}>
+                                                    ข้อเสนอแนะ: {item?.approval_comments}
+                                                </span>
+                                                <br />
+                                                <span>
+                                                    [{moment(item?.created_at).format('DD-MM-YYYY')} เวลา:
+                                                    {moment(item?.created_at).format('HH:mm')}]
+                                                </span>
+                                            </Typography>{' '}
                                         </>
-                                    )}
-
-                                    {activeStepDoc > 2 && (
-                                        <>
-                                            <Typography>เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
-                                        </>
-                                    )}
-
-                                    {activeStepDoc > 3 && (
-                                        <>
-                                            <Typography>ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
-                                        </>
-                                    )}
-
-                                    {activeStepDoc >= 4 && (
-                                        <>
-                                            <Typography>สาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
-                                        </>
-                                    )}
+                                    ))}
                                 </Grid>
                             </Grid>
-                        )} */}
+                        </DialogContentText>
 
                         <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
                             <Button variant="outlined" color="error" onClick={handleCloseCheck}>
@@ -753,7 +911,8 @@ const DocumentsDisapproveUser = () => {
                         </Box>
                     </DialogContent>
                 </Dialog>
-                {/* ลบ */}
+
+                {/* ลบเอกสาร */}
                 <Dialog open={openDelete} fullWidth={true} maxWidth={'sm'}>
                     <DialogTitle>
                         <Typography variant="h3" sx={{ fontWeight: 500, color: 'red', textAlign: 'center' }}>
@@ -782,6 +941,7 @@ const DocumentsDisapproveUser = () => {
                     </DialogContent>
                 </Dialog>
 
+                {/* การแก้ไขเอกสาร */}
                 <Dialog open={openEdit} onClose={handleCloseEdit} fullWidth={true} maxWidth={'sm'}>
                     <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
                         <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
@@ -792,7 +952,6 @@ const DocumentsDisapproveUser = () => {
                         {activeStep === 0 && (
                             <form onSubmit={handleSubmit}>
                                 {/* editCode */}
-                                <Typography sx={{ marginTop: 3, fontSize: '16px', color: '#ff0c34' }}>แก้ไขครั้งที่ </Typography>
                                 <Typography sx={{ marginTop: 3, fontSize: '16px' }}>รหัสเอกสาร:{editCode}</Typography>
                                 <Typography sx={{ marginTop: 3, fontSize: '16px' }}>ชื่อหัวข้อ</Typography>
                                 <TextField

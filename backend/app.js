@@ -19,10 +19,6 @@ const connection = mysql.createConnection({
   database: "banpho",
 });
 
-// app.use(cors());
-// app.use(express.static("public"));
-// app.use(fileUpload());
-
 app.use(cors());
 app.use(
   fileUpload({
@@ -33,10 +29,6 @@ app.use(
 app.use(express.static("files"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.get("/", (req, res) => {
-  res.send("Banpho");
-});
 
 // เรียกดูข้อมูล user ทั้งหมด
 app.get("/users", jsonParser, (req, res) => {
@@ -403,7 +395,6 @@ app.get("/documents/:id", jsonParser, (req, res) => {
 });
 
 // เช็ครายละเอียดคำร้องเบิกเงินของแต่ละโรงพยาบาล
-// ดูรายละเอียด
 app.get("/document-detail/:id", jsonParser, (req, res) => {
   const document_code = [req.params["id"]]; // hospital id
 
@@ -440,49 +431,34 @@ app.get("/documents-wait/:id", jsonParser, (req, res) => {
 });
 
 // เช็คสถานะของแต่ละตำแหน่งผู้อนุมัติ
-// localhost:7000/documents-status/10/2
-// #10 คือ hospital_id 2 คือ status
 app.get("/documents-status/:id/:status", jsonParser, (req, res) => {
   const hospital_id = [req.params["id"]];
   const status = req.params["status"];
-
-  connection.query(
-    "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
-    [hospital_id, status],
-    function (err, results) {
-      if (err) {
-        res.json({ status: "error", message: err });
-        return;
+  if (hospital_id == 17) {
+    connection.query(
+      "SELECT * FROM document WHERE document_status = ?",
+      [status],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
       }
-      res.json({ status: "ok", data: results });
-    }
-  );
-
-  // if (hospital_id != 17) {
-  //   connection.query(
-  //     "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
-  //     [hospital_id, status],
-  //     function (err, results) {
-  //       if (err) {
-  //         res.json({ status: "error", message: err });
-  //         return;
-  //       }
-  //       res.json({ status: "ok", data: results });
-  //     }
-  //   );
-  // } else {
-  //   connection.query(
-  //     "SELECT * FROM document WHERE document_status = ?",
-  //     [status],
-  //     function (err, results) {
-  //       if (err) {
-  //         res.json({ status: "error", message: err });
-  //         return;
-  //       }
-  //       res.json({ status: "ok", data: results });
-  //     }
-  //   );
-  // }
+    );
+  } else {
+    connection.query(
+      "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
+      [hospital_id, status],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  }
 });
 
 // สถานะที่รออนุมัติ
@@ -490,7 +466,6 @@ app.get("/documents-waiting/:id/:role", jsonParser, (req, res) => {
   const hospital_id = [req.params["id"]];
   const role = req.params["role"];
   console.log();
-  // // ไม่ใช่สาธารณสุข
   if (hospital_id != 17) {
     connection.query(
       "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
@@ -517,9 +492,6 @@ app.get("/documents-waiting/:id/:role", jsonParser, (req, res) => {
       }
     );
   }
-
-  // if (hospital_id != 17) {
-  // }
 });
 
 app.get("/documents-approve/:id/:role", jsonParser, (req, res) => {
@@ -563,34 +535,6 @@ app.get("/documents-disapprove/:id/:role", jsonParser, (req, res) => {
   const approval_status = req.params["role"]; // role ของคนที่จะเช็ค
   const status_disapprove = "ไม่อนุมัติ";
 
-  // if (hospital_id != 17) {
-  //   connection.query(
-  //     "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code WHERE document.hospital_id = ? AND approval.approval_status = ?",
-  //     [hospital_id, 2],
-  //     function (err, results) {
-  //       if (err) {
-  //         res.json({ status: "error", message: err });
-  //         return;
-  //       }
-  //       res.json({ status: "ok", data: results });
-  //     }
-  //   );
-  // } else {
-  //   connection.query(
-  //     "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code WHERE approve_" +
-  //       approval_status +
-  //       "= ? ",
-  //     [status_disapprove],
-  //     function (err, results) {
-  //       if (err) {
-  //         res.json({ status: "error", message: err });
-  //         return;
-  //       }
-  //       res.json({ status: "ok", data: results });
-  //     }
-  //   );
-  // }
-
   if (hospital_id != 17) {
     connection.query(
       "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code WHERE document.hospital_id = ? AND approval.approval_status = ?",
@@ -616,65 +560,69 @@ app.get("/documents-disapprove/:id/:role", jsonParser, (req, res) => {
       }
     );
   }
-
-  // SELECT * FROM `approval` WHERE approver_id = 2 AND approval_hospital = 17 AND approval_status = 2
 });
 
-// อนุมัติเอกสาร
-// id = id เอกสาร
+// การอนุมัติเอกสาร
 app.post("/approve/:id", jsonParser, (req, res) => {
-  const id = [req.params["id"]]; //code
+  const id = [req.params["id"]]; //document_code
   const role = req.body.role;
   const comment = req.body.comment;
   const hospital = req.body.hospital;
+  const approver = req.body.approver;
   let status = 1; // อนุมัติ
   let update_status = role + 1; // ปรับสถานะส่งให้ตำแหน่งอื่น
   const document_status = role - 1;
   const created_at = moment().format("YYYY-MM-DD hh:mm:ss");
-  const version = "";
-  const approver_name = "";
-  // Comment:
-  // มีการเพิ่ม Version ของ Document
-  // มีการเพิ่ม Approver_name
 
-  // ต้องมีการแจ้งเตือนไปที่ตำแหน่งถัดไป
+  // ค้นหาเวอร์ชั่นปัจจุบันที่ต้องการให้อนุมัติ
   connection.query(
-    "INSERT INTO approval (document_code,approver_id,approval_status,approval_comments,approval_hospital) VALUES (?,?,?,?,?)",
-    [id, role, status, comment, hospital],
+    "SELECT * FROM document WHERE document_code = ?",
+    [id],
     function (err, results) {
       if (err) {
         res.json({ status: "error", message: err });
         return;
       }
+      const version = results[0].document_version;
       connection.query(
-        "UPDATE document SET document_status = ?, approve_" +
-          document_status +
-          " = ?, updated_by = ? WHERE document_code = ?",
-        [role, status, role, id],
+        "INSERT INTO approval (document_code,document_version,approver_id,approver_name,approval_status,approval_comments,approval_hospital) VALUES (?,?,?,?,?,?,?)",
+        [id, version, role, approver, status, comment, hospital],
         function (err, results) {
           if (err) {
             res.json({ status: "error", message: err });
             return;
           }
-          // เพิ่มการแจ้งเตือนไปยังสถานะถัดไป
-          const status_unread = 0;
-          const public_health = 17;
-          const title_notification = "มีการเอกสารที่รอการอนุมัติ";
           connection.query(
-            "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
-            [
-              created_at,
-              title_notification,
-              status_unread,
-              update_status,
-              public_health,
-            ],
+            "UPDATE document SET document_status = ?, approve_" +
+              document_status +
+              " = ?, updated_by = ? WHERE document_code = ?",
+            [role, status, role, id],
             function (err, results) {
               if (err) {
                 res.json({ status: "error", message: err });
                 return;
               }
-              return res.json({ status: "ok" });
+              // เพิ่มการแจ้งเตือนไปยังสถานะถัดไป
+              const status_unread = 0;
+              const public_health = 17;
+              const title_notification = "มีการเอกสารที่รอการอนุมัติ";
+              connection.query(
+                "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
+                [
+                  created_at,
+                  title_notification,
+                  status_unread,
+                  update_status,
+                  public_health,
+                ],
+                function (err, results) {
+                  if (err) {
+                    res.json({ status: "error", message: err });
+                    return;
+                  }
+                  return res.json({ status: "ok" });
+                }
+              );
             }
           );
         }
@@ -683,52 +631,51 @@ app.post("/approve/:id", jsonParser, (req, res) => {
   );
 });
 
-// ไม่อนุมัติ
+// การไม่อนุมัติ
 app.post("/disapprove/:id", jsonParser, (req, res) => {
   const id = [req.params["id"]]; //code
   const role = req.body.role;
   const comment = req.body.comment;
   const hospital = req.body.hospital;
+  const approver = req.body.approver; //ผู้อนุมัติ
   const status = 2; // ไม่อนุมัติ
   const update_status = 0; // ปรับเป็นสถานะต้องแก้ไข
   const created_at = moment().format("YYYY-MM-DD hh:mm:ss");
   const version = "";
-  const approver_name = "";
-  // Comment:
-  // หากไม่อนุมัติจะลบสถานะที่เคยอนุมัติและนำข้อมูลที่ไม่ได้อนุมัติไปใส่ในdocument แทน
 
-  // อัพเดทสถานะให้เป็นสถานะต้องแก้ไข
+  // ค้นหาเวอร์ชั่นปัจจุบันที่ต้องการให้อนุมัติ
   connection.query(
-    "UPDATE document SET document_status = ?, updated_by = ? WHERE document_code = ?",
-    [update_status, role, id],
+    "SELECT * FROM document WHERE document_code = ?",
+    [id],
     function (err, results) {
       if (err) {
         res.json({ status: "error", message: err });
         return;
       }
-      // อัพเดทว่าไม่อนุมัติโดยใคร
+      const version = results[0].document_version;
+      // อัพเดทสถานะให้เป็นสถานะต้องแก้ไข
       connection.query(
-        "INSERT INTO approval (document_code,approver_id,approval_status,approval_comments,approval_hospital) VALUES (?,?,?,?,?)",
-        [id, role, 2, comment, hospital],
+        "UPDATE document SET document_status = ?,document_description = ?, updated_by = ? WHERE document_code = ?",
+        [update_status, comment, role, id],
         function (err, results) {
           if (err) {
             res.json({ status: "error", message: err });
             return;
           }
-          // แจ้งnoitification
-          const status_unread = 0;
-          const title_notification =
-            "มีการเอกสารที่รอการอนุมัติกรุณายื่นเรื่องมาใหม่อีกครั้ง";
+          // อัพเดทว่าไม่อนุมัติโดยใคร
           connection.query(
-            "SELECT * FROM document WHERE document_code = ?",
-            [id],
+            "INSERT INTO approval (document_code,document_version,approver_id,approver_name,approval_status,approval_comments,approval_hospital) VALUES (?,?,?,?,?,?,?)",
+            [id, version, role, approver, 2, comment, hospital],
             function (err, results) {
               if (err) {
                 res.json({ status: "error", message: err });
                 return;
               }
+              // แจ้งnoitification
+              const status_unread = 0;
+              const title_notification =
+                "มีการเอกสารที่ไม่ผ่านการอนุมัติ กรุณายื่นเรื่องมาใหม่อีกครั้ง";
               const user_role = 1;
-              const hospital_id = results[0].hospital_id;
               connection.query(
                 "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
                 [
@@ -736,7 +683,7 @@ app.post("/disapprove/:id", jsonParser, (req, res) => {
                   title_notification,
                   status_unread,
                   user_role,
-                  hospital_id,
+                  hospital,
                 ],
                 function (err, results) {
                   if (err) {
@@ -800,71 +747,24 @@ app.put("/document/:id", jsonParser, (req, res) => {
             res.json({ status: "error", message: err });
             return;
           }
-          const status_approve = 1; //ล้างสถานะที่ approve
+          const status_unread = 0;
+          const title_notification = "มีการเอกสารที่รอการอนุมัติ";
+          const user_role = 2; //role ผู้อำนวยการรพ.
           connection.query(
-            "DELETE FROM approval WHERE document_id = ? AND approval_status = ?",
-            [id, status_approve],
+            "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
+            [time_now, title_notification, status_unread, user_role, hospital],
             function (err, results) {
               if (err) {
                 res.json({ status: "error", message: err });
                 return;
               }
-              const status_unread = 0;
-              const title_notification = "มีการเอกสารที่รอการอนุมัติ";
-              const user_role = 2; //role ผู้อำนวยการรพ.
-              connection.query(
-                "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
-                [
-                  time_now,
-                  title_notification,
-                  status_unread,
-                  user_role,
-                  hospital,
-                ],
-                function (err, results) {
-                  if (err) {
-                    res.json({ status: "error", message: err });
-                    return;
-                  }
-                  return res.json({ status: "ok" });
-                }
-              );
+              return res.json({ status: "ok" });
             }
           );
         }
       );
     }
   );
-
-  // ต้องมีการเก็บค่าเมื่อไม่อนุมัติ
-
-  // UPDATE document SET document_title = ?,document_detail = ?,document_file = ?,document_file_path = ?,document_version = ?,document_status = ?,approve_1 = ?,approve_2 = ?,approve_3 = ?,approve_4 = ?,create_at = ?,create_by = ?,update_by = ?
-
-  // ส่งNotification
-
-  //
-  // const topic = req.body.topic;
-  // const detail = req.body.detail;
-  // const file = req.body.file;
-  // const version = req.body.version;
-
-  // แก้ไขแล้วต้องเคลียค่าการอนุมัติทั้งหมด
-
-  // เราต้องการ Version ของ form
-
-  // Reset สถานะทุกๆอันก่อนหน้าที่จะไม่ผ่าน
-
-  // connection.query(
-  //   "DELETE FROM documents WHERE document_id = ?",
-  //   [topic, detail, file,id],
-  //   function (err, results) {
-  //     if (err) {
-  //       res.json({ status: "error", message: err });
-  //       return;
-  //     }
-  //     res.json({ status: "ok" });
-  //   }
-  // );
 });
 
 // ลบคำร้อง
@@ -883,8 +783,7 @@ app.delete("/document/:id", jsonParser, (req, res) => {
   );
 });
 
-// Count
-// เช็คสถานะเอกสารทั้งหมด
+// เช็คจำนวนสถานะเอกสารทั้งหมดแสดงผลในหน้า Dashboard
 app.get("/documents-all/:id", jsonParser, (req, res) => {
   const hospital_id = [req.params["id"]];
 
@@ -901,7 +800,7 @@ app.get("/documents-all/:id", jsonParser, (req, res) => {
   );
 });
 
-// เช็คสถานะเอกสารเสร็จสิ้น
+// เช็คจำนวนสถานะเอกสารเสร็จสิ้นแสดงผลในหน้า Dashboard
 app.get("/documents-end/:id", jsonParser, (req, res) => {
   const hospital_id = [req.params["id"]];
   const status_end = 5;
@@ -919,7 +818,7 @@ app.get("/documents-end/:id", jsonParser, (req, res) => {
   );
 });
 
-// เช็คสถานะเอกสารกำลังดำเนินการอยู่
+// เช็คจำนวนสถานะเอกสารกำลังดำเนินการอยู่แสดงผลในหน้า Dashboard
 app.get("/documents-process/:id", jsonParser, (req, res) => {
   const hospital_id = [req.params["id"]];
   const status_end = 5;
@@ -927,6 +826,43 @@ app.get("/documents-process/:id", jsonParser, (req, res) => {
   connection.query(
     "SELECT COUNT(document_code) as COUNT FROM document WHERE document_status != ? AND hospital_id = ?",
     [status_end, hospital_id],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok", data: results });
+    }
+  );
+});
+
+// เช็คสถานะการอนุมัติของเอกสาร
+app.get("/documents-get-approver/:code/:version", jsonParser, (req, res) => {
+  const document_code = [req.params["code"]];
+  const document_version = req.params["version"]; // version ของเอกสาร
+  const approve_status = 1; // สถานะอนุมัติ
+
+  connection.query(
+    "SELECT * FROM approval WHERE document_code = ? AND document_version = ? AND approval_status = ?",
+    [document_code, document_version, approve_status],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok", data: results });
+    }
+  );
+});
+
+// เช็คสถานะการไม่อนุมัติของเอกสาร
+app.get("/documents-get-disapprover/:code", jsonParser, (req, res) => {
+  const document_code = [req.params["code"]];
+  const disapprove_status = 2; // สถานะไม่อนุมัติ
+
+  connection.query(
+    "SELECT * FROM approval WHERE document_code = ? AND approval_status = ?",
+    [document_code, disapprove_status],
     function (err, results) {
       if (err) {
         res.json({ status: "error", message: err });
@@ -1045,7 +981,6 @@ app.post("/upload", (req, res) => {
   });
 });
 
-// Notification
 // แสดงnotification ของแต่ละตำแหน่ง และ แต่ละโรงพยาบาล
 app.get("/notification/:role/:hospital", jsonParser, (req, res) => {
   const role = [req.params["role"]];
@@ -1064,6 +999,7 @@ app.get("/notification/:role/:hospital", jsonParser, (req, res) => {
   );
 });
 
+// แสดงจำนวนการแจ้งเตือนของแต่ละตำแหน่งของแต่ละโรงพยาบาล
 app.get("/notification-count/:role/:hospital", jsonParser, (req, res) => {
   const role = [req.params["role"]];
   const hospital = req.params["hospital"];

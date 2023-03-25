@@ -161,7 +161,8 @@ const DocumentsWaiting = () => {
             .post(`http://localhost:7000/disapprove/${id}`, {
                 role: user.role_status,
                 comment: comment,
-                hospital: user.hospital_id
+                hospital: user.hospital_id,
+                approver: user.user_firstname + ' ' + user.user_lastname
             })
             .then(function (response) {
                 const value = response.data;
@@ -185,7 +186,8 @@ const DocumentsWaiting = () => {
             .post(`http://localhost:7000/approve/${id}`, {
                 role: user.role_status,
                 comment: comment,
-                hospital: user.hospital_id
+                hospital: user.hospital_id,
+                approver: user.user_firstname + ' ' + user.user_lastname
             })
             .then(function (response) {
                 console.log(response);

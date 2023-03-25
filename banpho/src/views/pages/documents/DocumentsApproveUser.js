@@ -25,7 +25,6 @@ import {
     Stepper,
     Step,
     StepLabel,
-    StepContent,
     Grid
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -113,18 +112,6 @@ const DocumentsApproveUser = () => {
         }
     ];
 
-    const handleNextDoc = () => {
-        setActiveStepDoc((prevActiveStep) => prevActiveStep + 1);
-    };
-
-    const handleBacktDoc = () => {
-        setActiveStepDoc((prevActiveStep) => prevActiveStep - 1);
-    };
-
-    const handleResetDoc = () => {
-        setActiveStepDoc(0);
-    };
-
     const handleDownloadFile = (event) => {
         event.preventDefault();
         console.log('event =>', event);
@@ -189,7 +176,6 @@ const DocumentsApproveUser = () => {
         }
         event.target.elements.name.value = '';
         event.target.elements.detail.value = '';
-        // setFile(null);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
 
@@ -200,29 +186,6 @@ const DocumentsApproveUser = () => {
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
         setPage(0);
-    };
-
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-
-    const handleClose = () => {
-        setFile(null);
-        setFileName(null);
-        setFilePath(null);
-        setValue([]);
-        setOpen(false);
-    };
-
-    const handleNext = (event) => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    };
-
-    const handleBack = (event) => {
-        setFile(null);
-        setFileName(null);
-        setValue([]);
-        setOpen(false);
     };
 
     const handleCheck = (row) => {
@@ -237,19 +200,6 @@ const DocumentsApproveUser = () => {
     const handleCloseCheck = () => {
         setOpenCheck(false);
         setStatusDoc(null);
-    };
-
-    const checkStep = () => {
-        // setActiveStepDoc((prevActiveStep) => prevActiveStep + 1);
-        //
-    };
-
-    // Confirm delete
-    const handleOpenDelete = () => {};
-
-    const checkStepDocument = (value) => {
-        let step = value;
-        // setActiveStepDoc((prevActiveStep) => prevActiveStep + 1);
     };
 
     return (
@@ -328,6 +278,7 @@ const DocumentsApproveUser = () => {
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>{history.code}</Typography>
                                 </Grid>
                             </Grid>
+
                             <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
                                 <Grid item xs={3}>
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>ผู้ส่ง</Typography>
@@ -336,6 +287,7 @@ const DocumentsApproveUser = () => {
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>{history.reporter}</Typography>
                                 </Grid>
                             </Grid>
+
                             <Grid container sx={{ padding: '15px' }}>
                                 <Grid item xs={3}>
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>วันที่ส่ง</Typography>
@@ -346,6 +298,7 @@ const DocumentsApproveUser = () => {
                                     </Typography>
                                 </Grid>
                             </Grid>
+
                             <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
                                 <Grid item xs={3}>
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>ไฟล์เอกสาร</Typography>
@@ -354,6 +307,7 @@ const DocumentsApproveUser = () => {
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>{history.documents}</Typography>
                                 </Grid>
                             </Grid>
+
                             <Grid container sx={{ padding: '15px' }}>
                                 <Grid item xs={3}>
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>รายละเอียด</Typography>
@@ -362,7 +316,7 @@ const DocumentsApproveUser = () => {
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}></Typography>
                                 </Grid>
                             </Grid>
-                            {/* {history?.status == 0(<Typography sx={{ fontSize: '16px', fontWeight: '500',color:'#000' }}>แก้ไขเอกสาร</Typography>)} */}
+
                             <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
                                 <Grid item xs={3}>
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>สถานะการอนุมัติ</Typography>
@@ -408,42 +362,6 @@ const DocumentsApproveUser = () => {
                                 </Grid>
                             </Grid>
                         </DialogContentText>
-                        {/* {activeStepDoc > 0 && (
-                            <Grid container sx={{ marginTop: 3 }}>
-                                <Grid xs={3}>
-                                    <Typography>ประวัติการอนุมัติ</Typography>
-                                </Grid>
-                                <Grid xs={9}>
-                                    {activeStepDoc > 1 && (
-                                        <>
-                                            <Typography>ผู้อำนวยการโรงพยาบาล</Typography>
-                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
-                                        </>
-                                    )}
-
-                                    {activeStepDoc > 2 && (
-                                        <>
-                                            <Typography>เจ้าหน้าที่สาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
-                                        </>
-                                    )}
-
-                                    {activeStepDoc > 3 && (
-                                        <>
-                                            <Typography>ผู้ช่วยสาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
-                                        </>
-                                    )}
-
-                                    {activeStepDoc >= 4 && (
-                                        <>
-                                            <Typography>สาธารณสุขอำเภอบ้านโพธิ์</Typography>
-                                            <Typography>ผ่านการอนุมัติ นายก ขขขข [20-03-2023 เวลา 15:20] </Typography>
-                                        </>
-                                    )}
-                                </Grid>
-                            </Grid>
-                        )} */}
 
                         <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
                             <Button variant="outlined" color="error" onClick={handleCloseCheck}>

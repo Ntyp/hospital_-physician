@@ -82,21 +82,7 @@ const Notification = () => {
                 role: role
             })
             .then(function (response) {
-                notificationCurrent();
-                getData(user);
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-    };
-
-    const notificationCurrent = () => {
-        const hospital = user.hospital_id;
-        const role = user.role_status;
-        axios
-            .get(`http://localhost:7000/notification-count/${role}/${hospital}`)
-            .then(function (response) {
-                getData(user);
+                window.location.reload();
             })
             .catch(function (error) {
                 console.log(error);

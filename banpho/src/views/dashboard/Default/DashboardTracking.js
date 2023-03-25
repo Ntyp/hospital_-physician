@@ -36,22 +36,12 @@ const DashboardTracking = () => {
             <Grid item xs={12}>
                 <Grid container spacing={gridSpacing}>
                     <Grid item lg={4} md={4} sm={4} xs={12}>
-                        {/* <Card sx={{ backgroundColor: '#e8fcd4', padding: 10 }}>
-                                <Typography variant="h3">อุปกรณ์ที่ส่งไปฆ่าเชื้อทั้งหมด</Typography>
-                                <Typography variant="h3">0 รายการ</Typography>
-                            </Card> */}
                         <AllCard isLoading={isLoading} />
                     </Grid>
                     <Grid item lg={4} md={4} sm={4} xs={12}>
-                        {/* <Card sx={{ backgroundColor: '#fffc84' }}>
-                                <Typography variant="h3">จัดส่งอุปกรณ์การแพทย์</Typography>
-                            </Card> */}
                         <WaitingCard isLoading={isLoading} />
                     </Grid>
                     <Grid item lg={4} md={4} sm={4} xs={12}>
-                        {/* <Card sx={{ backgroundColor: '#c8fcfc' }}>
-                                <Typography>อุปกรณ์ที่ยังไม่ได้รับคืน</Typography>
-                            </Card> */}
                         <FinishCard isLoading={isLoading} />
                     </Grid>
                 </Grid>

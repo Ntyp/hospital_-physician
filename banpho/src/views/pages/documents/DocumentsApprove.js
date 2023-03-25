@@ -13,23 +13,14 @@ import {
     TableContainer,
     TableHead,
     TablePagination,
-    TableRow,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    Box,
-    IconButton
+    TableRow
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 
 const DocumentsApprove = () => {
     const [user, setUser] = useState();
     const [rows, setRows] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
-    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -77,23 +68,7 @@ const DocumentsApprove = () => {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
-    function handleEdit(row) {
-        // Implement the edit functionality here
-    }
 
-    function handleDelete(row) {
-        // Implement the delete functionality here
-    }
-
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-
-    const handleClose = () => {
-        setOpen(false);
-    };
-
-    const handleSubmit = (event) => {};
     return (
         <div>
             <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
@@ -111,13 +86,6 @@ const DocumentsApprove = () => {
                         padding: '30px'
                     }}
                 >
-                    {/* <Button
-                        variant="contained"
-                        onClick={handleClickOpen}
-                        sx={{ float: 'left', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
-                    >
-                        Export
-                    </Button> */}
                     <TableContainer>
                         <Table>
                             <TableHead>
