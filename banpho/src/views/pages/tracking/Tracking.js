@@ -386,7 +386,7 @@ const Tracking = () => {
                                         variant="outlined"
                                         color="success"
                                         type="submit"
-                                        style={{ fontSize: '18px', borderRadius: 100 }}
+                                        style={{ fontSize: '16px', borderRadius: 100 }}
                                     >
                                         เพิ่มรายการ
                                     </Button>
@@ -404,13 +404,13 @@ const Tracking = () => {
                                         {equipment.map((item, key) => (
                                             <li key={key} style={{ listStyle: 'none', marginTop: 20 }}>
                                                 <Grid container>
-                                                    <Grid item xs={1} style={{ fontSize: '18px' }}>
+                                                    <Grid item xs={1} style={{ fontSize: '16px' }}>
                                                         {key + 1}.
                                                     </Grid>
-                                                    <Grid item xs={5} style={{ fontSize: '18px' }}>
+                                                    <Grid item xs={5} style={{ fontSize: '16px' }}>
                                                         {item.name}
                                                     </Grid>
-                                                    <Grid item xs={4} style={{ fontSize: '18px' }}>
+                                                    <Grid item xs={4} style={{ fontSize: '16px' }}>
                                                         จำนวน: {item.quantity}
                                                     </Grid>
                                                     <Grid item xs={2}>
@@ -454,15 +454,15 @@ const Tracking = () => {
                                     รายการทั้งหมด
                                 </Typography>
                                 {equipment.map((item, key) => (
-                                    <li style={{ fontSize: '18px', marginTop: '10px', listStyle: 'none' }} key={key}>
+                                    <li style={{ fontSize: '16px', marginTop: '10px', listStyle: 'none' }} key={key}>
                                         <Grid container>
-                                            <Grid item xs={1} style={{ fontSize: '18px' }}>
+                                            <Grid item xs={1} style={{ fontSize: '16px' }}>
                                                 {key + 1}.
                                             </Grid>
-                                            <Grid item xs={5} style={{ fontSize: '18px' }}>
+                                            <Grid item xs={5} style={{ fontSize: '16px' }}>
                                                 {item.name}
                                             </Grid>
-                                            <Grid item xs={4} style={{ fontSize: '18px' }}>
+                                            <Grid item xs={4} style={{ fontSize: '16px' }}>
                                                 จำนวน: {item.quantity}
                                             </Grid>
                                         </Grid>
@@ -513,7 +513,7 @@ const Tracking = () => {
                     </DialogContent>
                 </Dialog>
 
-                <Dialog
+                {/* <Dialog
                     open={openCheck}
                     fullWidth={true}
                     maxWidth={'sm'}
@@ -570,7 +570,6 @@ const Tracking = () => {
                                                 fontSize: '16px'
                                             }}
                                         >
-                                            {/* {index} , {activeStepTracking} */}
                                             {step.label}
                                             {index == 1 ? (
                                                 <>
@@ -599,6 +598,29 @@ const Tracking = () => {
                                             ) : (
                                                 ''
                                             )}
+                                            {activeStepTracking === 3 && index === 2 && (
+                                                <>
+                                                    {history.tracking_sender != null ? (
+                                                        <>
+                                                            <br />
+                                                            <span style={{ color: 'red' }}>ผู้รับอุปกรณ์: {history.tracking_sender}</span>
+                                                        </>
+                                                    ) : (
+                                                        ''
+                                                    )}
+                                                    {history.tracking_meet_date != null ? (
+                                                        <>
+                                                            <br />
+                                                            <span style={{ color: 'red' }}>
+                                                                วันรับอุปกรณ์:
+                                                                {moment(history.tracking_meet_date).format('DD-MM-YYYY')}
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        ''
+                                                    )}
+                                                </>
+                                            )}
                                         </StepLabel>
                                     </Step>
                                 ))}
@@ -608,6 +630,210 @@ const Tracking = () => {
                     <DialogActions>
                         <Button onClick={handleCloseCheck}>ปิด</Button>
                     </DialogActions>
+                </Dialog> */}
+
+                <Dialog
+                    fullWidth={true}
+                    maxWidth={'sm'}
+                    open={openCheck}
+                    onClose={handleCloseCheck}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title" sx={{ backgroundColor: '#086c3c' }}>
+                        <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
+                            รายละเอียดการนำส่งอุปกรณ์-เครื่องมือการแพทย์
+                        </Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-description">
+                            <Grid container sx={{ marginTop: 3, padding: '15px' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>ผู้ส่ง</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                        {history.tracking_sender}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>รหัสชุด</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>{history.group_id}</Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Grid container sx={{ padding: '15px' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>วันที่ส่ง</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                        {moment(history.date_at).format('DD-MM-YYYY')}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>อุปกรณ์ที่ส่ง</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                        {showItem.map((item, key) => (
+                                            <li style={{ fontSize: '16px' }} key={key}>
+                                                {item.equipment_name} จำนวน: {item.equipment_quantity}
+                                            </li>
+                                        ))}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Grid container sx={{ padding: '15px' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>สถานะ</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                        {history.tracking_status}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Grid container sx={{ padding: '15px', backgroundColor: '#f2f2f2' }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>สถานะการอนุมัติ</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    {/* <Stepper activeStep={activeStepDoc} orientation="vertical" sx={{ marginTop: 3 }}>
+                                        {stepsDocuments.map((step, index) => (
+                                            <Step
+                                                key={step.label}
+                                                sx={{
+                                                    '& .MuiStepLabel-root .Mui-completed': {
+                                                        color: 'success.main' // circle color (COMPLETED)
+                                                    },
+                                                    '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel': {
+                                                        color: 'grey.500' // Just text label (COMPLETED)
+                                                    },
+                                                    '& .MuiStepLabel-root .Mui-active': {
+                                                        color: 'success.main' // circle color (ACTIVE)
+                                                    },
+                                                    '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel': {
+                                                        color: 'common.white' // Just text label (ACTIVE)
+                                                    },
+                                                    '& .MuiStepLabel-root .Mui-active .MuiStepIcon-text': {
+                                                        fill: 'white' // circle's number (ACTIVE)
+                                                    }
+                                                }}
+                                            >
+                                                <StepLabel>
+                                                    <p style={{ fontSize: '16px' }}>{step.label}</p>
+                                                    {activeStepDoc == index ? 'รอการอนุมัติ' : ''}
+                                                    {activeStepDoc > index ? 'ผ่านการอนุมัติ' : ''}
+                                                </StepLabel>
+                                            </Step>
+                                        ))}
+                                    </Stepper> */}
+                                    <Stepper activeStep={activeStepTracking} orientation="vertical" sx={{ marginTop: 3 }}>
+                                        {stepsTracking.map((step, index) => (
+                                            <Step
+                                                key={step.label}
+                                                sx={{
+                                                    '& .MuiStepLabel-root .Mui-completed': {
+                                                        color: 'success.main' // circle color (COMPLETED)
+                                                    },
+                                                    '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel': {
+                                                        color: 'grey.500' // Just text label (COMPLETED)
+                                                    },
+                                                    '& .MuiStepLabel-root .Mui-active': {
+                                                        color: 'success.main' // circle color (ACTIVE)
+                                                    },
+                                                    '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel': {
+                                                        color: 'common.white' // Just text label (ACTIVE)
+                                                    },
+                                                    '& .MuiStepLabel-root .Mui-active .MuiStepIcon-text': {
+                                                        fill: 'white' // circle's number (ACTIVE)
+                                                    }
+                                                }}
+                                            >
+                                                <StepLabel
+                                                    style={{
+                                                        color: index === activeStepTracking ? '#086c3c' : 'gray',
+                                                        fontSize: '16px'
+                                                    }}
+                                                >
+                                                    {step.label}
+                                                    {index == 1 ? (
+                                                        <>
+                                                            {history.tracking_recipient != null ? (
+                                                                <>
+                                                                    <br />
+                                                                    <span style={{ color: 'red' }}>
+                                                                        ผู้รับอุปกรณ์: {history.tracking_recipient}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                ''
+                                                            )}
+                                                            {history.tracking_meet_date != null ? (
+                                                                <>
+                                                                    <br />
+                                                                    <span style={{ color: 'red' }}>
+                                                                        วันนัดรับอุปกรณ์:
+                                                                        {moment(history.tracking_meet_date).format('YYYY-MM-DD')}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                ''
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        ''
+                                                    )}
+                                                    {activeStepTracking === 3 && index === 2 && (
+                                                        <>
+                                                            {history.tracking_sender != null ? (
+                                                                <>
+                                                                    <br />
+                                                                    <span style={{ color: 'red' }}>
+                                                                        ผู้รับอุปกรณ์: {history.tracking_sender}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                ''
+                                                            )}
+                                                            {history.tracking_meet_date != null ? (
+                                                                <>
+                                                                    <br />
+                                                                    <span style={{ color: 'red' }}>
+                                                                        วันรับอุปกรณ์:
+                                                                        {moment(history.tracking_meet_date).format('DD-MM-YYYY')}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                ''
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </StepLabel>
+                                            </Step>
+                                        ))}
+                                    </Stepper>
+                                </Grid>
+                            </Grid>
+                        </DialogContentText>
+
+                        <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                            <Button variant="outlined" color="error" onClick={handleCloseCheck}>
+                                ออก
+                            </Button>
+                        </Box>
+                    </DialogContent>
                 </Dialog>
             </Card>
         </div>

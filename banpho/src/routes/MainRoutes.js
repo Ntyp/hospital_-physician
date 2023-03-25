@@ -8,6 +8,8 @@ import ProductForm from 'views/pages/product/ProductFrom';
 import Tracking from 'views/pages/tracking/Tracking';
 import TrackingForm from 'views/pages/tracking/TrackingForm';
 import Documents from 'views/pages/documents/Documents';
+import DocumentsApproveUser from 'views/pages/documents/DocumentsApproveUser';
+import DocumentsDisapproveUser from 'views/pages/documents/DocumentsDisapproveUser';
 import DocumentsDashboard from 'views/pages/documents/DocumentsDashboard';
 import DocumentsWaiting from 'views/pages/documents/DocumentsWaiting';
 import DocumentsApprove from 'views/pages/documents/DocumentsApprove';
@@ -49,6 +51,14 @@ const MainRoutes = {
         {
             path: '/documents',
             element: <Documents />
+        },
+        {
+            path: '/documents-approve',
+            element: <DocumentsApproveUser />
+        },
+        {
+            path: '/documents-disapprove',
+            element: <DocumentsDisapproveUser />
         },
         {
             path: '/dashboard-document',
