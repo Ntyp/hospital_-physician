@@ -70,7 +70,7 @@ const WaitingCard = ({ isLoading }) => {
 
     function getData(value) {
         const id = value.hospital_id;
-        const status = 'รอระบุวันนัดรับ';
+        const status = 'process';
         axios
             .get(`http://localhost:7000/tracking-status/${id}/${status}`)
             .then((response) => {

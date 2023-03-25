@@ -192,6 +192,7 @@ app.post("/create-tracking", jsonParser, (req, res) => {
 app.get("/tracking-status/:id/:status", jsonParser, (req, res) => {
   const id = [req.params["id"]]; //รหัสโรงพยาบาล
   const status = [req.params["status"]]; //สถานะ
+  const finish = "เสร็จสิ้น";
 
   if (status == "all") {
     connection.query(
@@ -205,10 +206,22 @@ app.get("/tracking-status/:id/:status", jsonParser, (req, res) => {
         res.json({ status: "ok", data: results });
       }
     );
-  } else {
+  } else if (status == "finish") {
     connection.query(
       "SELECT COUNT(tracking_id) as count FROM tracking WHERE hospital_id = ? AND tracking_status = ?",
-      [id, status],
+      [id, finish],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  } else if (status == "process") {
+    connection.query(
+      "SELECT COUNT(tracking_id) as count FROM tracking WHERE hospital_id = ? AND tracking_status != ?",
+      [id, finish],
       function (err, results) {
         if (err) {
           res.json({ status: "error", message: err });

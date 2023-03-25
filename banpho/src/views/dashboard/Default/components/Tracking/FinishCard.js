@@ -70,7 +70,7 @@ const FinishCard = ({ isLoading }) => {
 
     function getData(value) {
         const id = value.hospital_id;
-        const status = 'เสร็จสิ้น';
+        const status = 'finish';
         axios
             .get(`http://localhost:7000/tracking-status/${id}/${status}`)
             .then((response) => {
