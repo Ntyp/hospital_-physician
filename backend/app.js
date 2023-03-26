@@ -750,17 +750,25 @@ app.put("/document/:id", jsonParser, (req, res) => {
           const status_unread = 0;
           const title_notification = "มีการเอกสารที่รอการอนุมัติ";
           const user_role = 2; //role ผู้อำนวยการรพ.
-          connection.query(
-            "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
-            [time_now, title_notification, status_unread, user_role, hospital],
-            function (err, results) {
-              if (err) {
-                res.json({ status: "error", message: err });
-                return;
+
+          89 -
+            connection.query(
+              "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
+              [
+                time_now,
+                title_notification,
+                status_unread,
+                user_role,
+                hospital,
+              ],
+              function (err, results) {
+                if (err) {
+                  res.json({ status: "error", message: err });
+                  return;
+                }
+                return res.json({ status: "ok" });
               }
-              return res.json({ status: "ok" });
-            }
-          );
+            );
         }
       );
     }
@@ -778,7 +786,17 @@ app.delete("/document/:id", jsonParser, (req, res) => {
         res.json({ status: "error", message: err });
         return;
       }
-      res.json({ status: "ok" });
+      connection.query(
+        "DELETE FROM approval WHERE document_code = ?",
+        [id],
+        function (err, results) {
+          if (err) {
+            res.json({ status: "error", message: err });
+            return;
+          }
+          res.json({ status: "ok" });
+        }
+      );
     }
   );
 });
@@ -879,26 +897,134 @@ app.post("/user", jsonParser, (req, res) => {
   const password = req.body.password;
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
-  const position = req.body.position;
-  const role = req.body.role;
-  const place = req.body.place;
   const hospital = req.body.hospital;
+  const role = req.body.role;
 
   connection.query(
-    "INSERT INTO users (user_username,user_password,user_firstname,user_lastname,user_position,user_role,user_place,hospital_id) VALUES (?,?,?,?,?,?,?,?)",
-    [username, password, firstname, lastname, position, role, place, hospital],
+    "SELECT * FROM hospital WHERE hospital_id = ?",
+    [hospital],
     function (err, results) {
       if (err) {
         res.json({ status: "error", message: err });
         return;
       }
-      res.json({ status: "ok" });
+      const place = results[0].hospital_name;
+      connection.query(
+        "SELECT * FROM role WHERE role_id = ?",
+        [role],
+        function (err, results) {
+          if (err) {
+            res.json({ status: "error", message: err });
+            return;
+          }
+          const position = results[0].role_name_th;
+          const user_role = results[0].role_name_en;
+          // เจ้าหน้าที่ และ ผู้อำนวยการ โรงพยาบาล
+          if (role != 1 || role != 2) {
+            connection.query(
+              "INSERT INTO users (user_username,user_password,user_firstname,user_lastname,user_position,user_role,role_status,user_place,hospital_id) VALUES (?,?,?,?,?,?,?,?,?)",
+              [
+                username,
+                password,
+                firstname,
+                lastname,
+                position,
+                user_role,
+                role,
+                place,
+                hospital,
+              ],
+              function (err, results) {
+                if (err) {
+                  res.json({ status: "error", message: err });
+                  return;
+                }
+                res.json({ status: "ok" });
+              }
+            );
+          } else {
+            const public_health_place = "สาธารณสุขอำเภอบ้านโพธิ์";
+            const public_health_id = 17;
+            connection.query(
+              "INSERT INTO users (user_username,user_password,user_firstname,user_lastname,user_position,user_role,user_place,hospital_id) VALUES (?,?,?,?,?,?,?,?)",
+              [
+                username,
+                password,
+                firstname,
+                lastname,
+                position,
+                role,
+                public_health_place,
+                public_health_id,
+              ],
+              function (err, results) {
+                if (err) {
+                  res.json({ status: "error", message: err });
+                  return;
+                }
+                res.json({ status: "ok" });
+              }
+            );
+          }
+        }
+      );
     }
   );
 });
 
 // อัปเดตผู้ใช้งาน
-app.put("/user", jsonParser, (req, res) => {});
+app.put("/user/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]];
+  const firstname = req.body.firstname;
+  const lastname = req.body.lastname;
+  const role = req.body.role;
+  const hospital = req.body.hospital;
+
+  connection.query(
+    "SELECT * FROM hospital WHERE hospital_id = ?",
+    [hospital],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      const place = results[0].hospital_name;
+      connection.query(
+        "SELECT * FROM role WHERE role_id = ?",
+        [role],
+        function (err, results) {
+          if (err) {
+            res.json({ status: "error", message: err });
+            return;
+          }
+          const position = results[0].role_name_th;
+          const user_role = results[0].role_name_en;
+          // เจ้าหน้าที่ และ ผู้อำนวยการ โรงพยาบาล
+          connection.query(
+            "UPDATE users SET user_firstname = ?,user_lastname = ?,user_position = ?,user_role = ?,user_status = ?,user_place = ?,hospital_id = ? WHERE user_id = ?",
+            [
+              firstname,
+              lastname,
+              position,
+              user_role,
+              role,
+              place,
+              hospital,
+              id,
+            ],
+            function (err, results) {
+              if (err) {
+                res.json({ status: "error", message: err });
+                return;
+              }
+              res.json({ status: "ok" });
+            }
+          );
+        }
+      );
+    }
+  );
+});
 
 // ลบผู้ใช้งาน
 app.delete("/users/:id", jsonParser, (req, res) => {
@@ -917,7 +1043,7 @@ app.delete("/users/:id", jsonParser, (req, res) => {
 });
 
 // ดูโรงพยาบาลทั้งหมด
-app.get("/hopital", jsonParser, (req, res) => {
+app.get("/hospital", jsonParser, (req, res) => {
   connection.query("SELECT * FROM hospital", function (err, results) {
     if (err) {
       res.json({ status: "error", message: err });
@@ -927,13 +1053,47 @@ app.get("/hopital", jsonParser, (req, res) => {
   });
 });
 
-// สร้างโรงพยาบาล
-app.post("/hopital", jsonParser, (req, res) => {
-  const hospital_name = req.body.hospital;
+// นำไปสร้างผู้ใช้
+app.get("/hospital-list", jsonParser, (req, res) => {
+  const public_health_id = 17;
+  connection.query(
+    "SELECT * FROM hospital WHERE hospital_id != ?",
+    [public_health_id],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok", data: results });
+    }
+  );
+});
+
+app.get("/hospital/:name", jsonParser, (req, res) => {
+  const name = [req.params["name"]];
 
   connection.query(
-    "INSERT INTO hospital (hospital_name) VALUES (?)",
-    [hospital_name],
+    "SELECT * FROM hospital WHERE hospital_name = ?",
+    [name],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok", data: results });
+    }
+  );
+});
+
+// สร้างโรงพยาบาล
+app.post("/hospital", jsonParser, (req, res) => {
+  const name = req.body.name;
+  const address = req.body.address;
+  const phone = req.body.phone;
+
+  connection.query(
+    "INSERT INTO hospital (hospital_name,hospital_address,hospital_tel) VALUES (?,?,?)",
+    [name, address, phone],
     function (err, results) {
       if (err) {
         res.json({ status: "error", message: err });
@@ -945,7 +1105,24 @@ app.post("/hopital", jsonParser, (req, res) => {
 });
 
 // อัปเดตข้อมูลโรงพยาบาล
-app.put("/hopital", jsonParser, (req, res) => {});
+app.put("/hospital/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]];
+  const name = req.body.name;
+  const address = req.body.address;
+  const tel = req.body.phone;
+
+  connection.query(
+    "UPDATE hospital SET hospital_name = ? , hospital_address = ? , hospital_tel = ? WHERE hospital_id = ?",
+    [name, address, tel, id],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      return res.json({ status: "ok" });
+    }
+  );
+});
 
 // ลบโรงพยาบาล
 app.delete("/hospital/:id", jsonParser, (req, res) => {

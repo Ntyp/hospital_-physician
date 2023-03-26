@@ -32,19 +32,18 @@ import axios from 'axios';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorIcon from '@mui/icons-material/Error';
+import EditIcon from '@mui/icons-material/Edit';
 
 const Users = () => {
-    const [username, setUsername] = useState();
-    const [password, setPassword] = useState();
-    const [firstanme, setFirstname] = useState();
-    const [lastname, setLastname] = useState();
+    const [id, setId] = useState();
     const [role, setRole] = useState();
-    const [hospital, setHospital] = useState();
+    const [hospital, setHospital] = useState([]);
     const [listHospital, setListHospital] = useState();
     const [rows, setRows] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
     const [openCreate, setOpenCreate] = useState(false);
+    const [openEdit, setOpenEdit] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
 
     const handleOpen = () => {
@@ -55,7 +54,36 @@ const Users = () => {
         setOpenCreate(false);
     };
 
-    const handleCreate = () => {};
+    const handleChange = (event) => {
+        setHospital(event.target.value);
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const username = event.target.elements.username.value;
+        const password = event.target.elements.password.value;
+        const firstname = event.target.elements.firstname.value;
+        const lastname = event.target.elements.lastname.value;
+        const role_status = event.target.elements.role.value;
+        const hospital_id = event.target.elements.hospital.value;
+
+        axios
+            .post(`http://localhost:7000/user`, {
+                username: username,
+                password: password,
+                firstname: firstname,
+                lastname: lastname,
+                role: role_status,
+                hospital: hospital_id
+            })
+            .then(function (response) {
+                getData();
+                setOpenCreate(false);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    };
 
     const changeRole = (event) => {
         console.log(event.target.value);
@@ -71,13 +99,59 @@ const Users = () => {
         setPage(0);
     };
 
+    // Edit
+    const handleOpenEdit = (row) => {
+        setId(row.id);
+        setOpenEdit(true);
+    };
+
+    const handleCloseEdit = () => {
+        setOpenEdit(false);
+    };
+    const handleSubmitEdit = (event) => {
+        const id = id;
+        event.preventDefault();
+        const firstname = event.target.elements.firstname.value;
+        const lastname = event.target.elements.lastname.value;
+        const role_status = event.target.elements.role.value;
+        const hospital_id = event.target.elements.hospital.value;
+        axios
+            .put(`http://localhost:7000/user/${id}`, {
+                firtstname: firstname,
+                lastname: lastname,
+                role: role_status,
+                hospital: hospital_id
+            })
+            .then(function (response) {
+                getData();
+                setOpenEdit(false);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    };
+
     // Delete
-    const handleOpenDelete = () => {
+    const handleOpenDelete = (row) => {
+        setId(row.id);
         setOpenDelete(true);
     };
 
     const handleCloseDelete = () => {
+        setId(null);
         setOpenDelete(false);
+    };
+
+    const handleSubmitDelete = () => {
+        const id = id;
+        axios
+            .delete(`http://localhost:7000/users/${id}`)
+            .then((response) => {
+                setOpenDelete(false);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     useEffect(() => {
@@ -92,7 +166,13 @@ const Users = () => {
                 const value = response?.data;
                 setRows(
                     value.map((item, index) =>
-                        createData(index + 1, item.user_firstname + ' ' + item.user_lastname, item.user_position, item.user_place)
+                        createData(
+                            index + 1,
+                            item.user_id,
+                            item.user_firstname + ' ' + item.user_lastname,
+                            item.user_position,
+                            item.user_place
+                        )
                     )
                 );
             })
@@ -103,10 +183,11 @@ const Users = () => {
 
     const getHospital = () => {
         axios
-            .get(`http://localhost:7000/hospital`)
+            .get(`http://localhost:7000/hospital-list`)
             .then((response) => {
-                const value = response?.data;
+                const value = response?.data.data;
                 console.log(value);
+                setListHospital(value);
             })
             .catch((error) => {
                 console.error(error);
@@ -114,7 +195,8 @@ const Users = () => {
     };
 
     const columns = [
-        { id: 'order', label: 'ลำดับที่', minWidth: 30 },
+        { id: 'order', label: 'ลำดับ', minWidth: 30 },
+        { id: 'id', label: 'ไอดี', minWidth: 30 },
         { id: 'name', label: 'ชื่อ-นามสกุล', minWidth: 100 },
         { id: 'role', label: 'ตำแหน่ง', minWidth: 100 },
         { id: 'hospital', label: 'โรงพยาบาล', minWidth: 100 },
@@ -123,15 +205,20 @@ const Users = () => {
             label: 'จัดการ',
             minWidth: 50,
             render: (row) => (
-                <IconButton aria-label="check" color="error" onClick={() => handleOpenDelete(row)}>
-                    <DeleteIcon />
-                </IconButton>
+                <>
+                    <IconButton aria-label="edit" onClick={() => handleOpenEdit(row)}>
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton aria-label="delete" color="error" onClick={() => handleOpenDelete(row)}>
+                        <DeleteIcon />
+                    </IconButton>
+                </>
             )
         }
     ];
 
-    function createData(order, name, role, hospital) {
-        return { order, name, role, hospital };
+    function createData(order, id, name, role, hospital) {
+        return { order, id, name, role, hospital };
     }
 
     return (
@@ -210,89 +297,163 @@ const Users = () => {
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        <Grid container sx={{ marginTop: 5 }}>
-                            <Grid xs={3} sx={{ alignSelf: 'center' }}>
-                                <Typography sx={{ fontSize: '18px' }}>ชื่อสมาชิก</Typography>
+                        <form onSubmit={handleSubmit}>
+                            <Grid container sx={{ marginTop: 5 }}>
+                                <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                    <Typography sx={{ fontSize: '18px' }}>ชื่อสมาชิก</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    <TextField id="username" name="username" fullWidth variant="outlined" />
+                                </Grid>
                             </Grid>
-                            <Grid xs={9}>
-                                <TextField fullWidth placeholder="กรุณาระบุ" variant="outlined" />
+                            <Grid container sx={{ marginTop: 5 }}>
+                                <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                    <Typography sx={{ fontSize: '18px' }}>รหัสผ่าน</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    <TextField id="password" name="password" fullWidth variant="outlined" />
+                                </Grid>
                             </Grid>
-                        </Grid>
-                        <Grid container sx={{ marginTop: 5 }}>
-                            <Grid xs={3} sx={{ alignSelf: 'center' }}>
-                                <Typography sx={{ fontSize: '18px' }}>รหัสผ่าน</Typography>
+                            <Grid container sx={{ marginTop: 5 }}>
+                                <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                    <Typography sx={{ fontSize: '18px' }}>ชื่อ</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    <TextField id="firstname" name="firstname" fullWidth variant="outlined" />
+                                </Grid>
                             </Grid>
-                            <Grid xs={9}>
-                                <TextField fullWidth placeholder="กรุณาระบุ" variant="outlined" />
+                            <Grid container sx={{ marginTop: 5 }}>
+                                <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                    <Typography sx={{ fontSize: '18px' }}>นามสกุล</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    <TextField id="lastname" name="lastname" fullWidth variant="outlined" />
+                                </Grid>
                             </Grid>
-                        </Grid>
-                        <Grid container sx={{ marginTop: 5 }}>
-                            <Grid xs={3} sx={{ alignSelf: 'center' }}>
-                                <Typography sx={{ fontSize: '18px' }}>ชื่อ</Typography>
+                            <Grid container sx={{ marginTop: 5 }}>
+                                <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                    <Typography sx={{ fontSize: '18px' }}>ตำแหน่ง</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    <Select id="role" name="role" value={role} onChange={changeRole} fullWidth>
+                                        <MenuItem value={1}>เจ้าหน้าที่โรงพยาบาล</MenuItem>
+                                        <MenuItem value={2}>ผู้อำนวยการโรงพยาบาล</MenuItem>
+                                        <MenuItem value={3}>เจ้าหน้าที่สาธารณสุข</MenuItem>
+                                        <MenuItem value={4}>ผู้ช่วยสาธารณสุข</MenuItem>
+                                        <MenuItem value={5}>ผู้อำนวยการสาธารณสุข</MenuItem>
+                                    </Select>
+                                </Grid>
                             </Grid>
-                            <Grid xs={9}>
-                                <TextField fullWidth placeholder="กรุณาระบุ" variant="outlined" />
-                            </Grid>
-                        </Grid>
-                        <Grid container sx={{ marginTop: 5 }}>
-                            <Grid xs={3} sx={{ alignSelf: 'center' }}>
-                                <Typography sx={{ fontSize: '18px' }}>นามสกุล</Typography>
-                            </Grid>
-                            <Grid xs={9}>
-                                <TextField fullWidth placeholder="กรุณาระบุ" variant="outlined" />
-                            </Grid>
-                        </Grid>
-                        <Grid container sx={{ marginTop: 5 }}>
-                            <Grid xs={3} sx={{ alignSelf: 'center' }}>
-                                <Typography sx={{ fontSize: '18px' }}>ตำแหน่ง</Typography>
-                            </Grid>
-                            <Grid xs={9}>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    value={role}
-                                    onChange={changeRole}
-                                    fullWidth
-                                >
-                                    <MenuItem value={1}>เจ้าหน้าที่โรงพยาบาล</MenuItem>
-                                    <MenuItem value={2}>ผู้อำนวยการโรงพยาบาล</MenuItem>
-                                    <MenuItem value={3}>เจ้าหน้าที่สาธารณสุข</MenuItem>
-                                    <MenuItem value={4}>ผู้ช่วยสาธารณสุข</MenuItem>
-                                    <MenuItem value={5}>ผู้อำนวยการสาธารณสุข</MenuItem>
-                                </Select>
-                            </Grid>
-                        </Grid>
-                        {/* {(role = 1 | 2 ? 'สวัสดี' : 'อิอิ')} */}
-                        <Grid container sx={{ marginTop: 5 }}>
-                            <Grid xs={3} sx={{ alignSelf: 'center' }}>
-                                <Typography sx={{ fontSize: '18px' }}>โรงพยาบาล</Typography>
-                            </Grid>
-                            <Grid xs={9}>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    value={role}
-                                    // onChange={handleChange}
-                                    fullWidth
-                                >
-                                    <MenuItem value={1}>Ten</MenuItem>
-                                    <MenuItem value={2}>Twenty</MenuItem>
-                                    <MenuItem value={3}>Thirty</MenuItem>
-                                </Select>
-                            </Grid>
-                        </Grid>
+                            {role === 1 || role === 2 ? (
+                                <>
+                                    <Grid container sx={{ marginTop: 5 }}>
+                                        <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                            <Typography sx={{ fontSize: '18px' }}>โรงพยาบาล</Typography>
+                                        </Grid>
+                                        <Grid xs={9}>
+                                            <Select id="hospital" name="hospital" value={hospital} onChange={handleChange} fullWidth>
+                                                {listHospital.map((item, key) => (
+                                                    <MenuItem value={item.hospital_id}>{item.hospital_name}</MenuItem>
+                                                ))}
+                                            </Select>
+                                        </Grid>
+                                    </Grid>
+                                </>
+                            ) : (
+                                ''
+                            )}
+                            <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                <Button variant="outlined" color="error" onClick={handleClose}>
+                                    ยกเลิก
+                                </Button>
+                                <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} type="submit">
+                                    ต่อไป
+                                </Button>
+                            </Box>
+                        </form>
                     </DialogContentText>
                 </DialogContent>
-                <DialogActions>
-                    <Button variant="outlined" color="error" onClick={handleClose}>
-                        ปิด
-                    </Button>
-                    <Button variant="outlined" color="success" onClick={handleClose}>
-                        ยืนยัน
-                    </Button>
-                </DialogActions>
             </Dialog>
 
+            {/* แก้ไขผู้ใช้งาน */}
+            <Dialog
+                open={openEdit}
+                fullWidth={true}
+                maxWidth={'sm'}
+                onClose={handleCloseEdit}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title" sx={{ backgroundColor: '#086c3c' }}>
+                    <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
+                        เพิ่มสมาชิก
+                    </Typography>
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        <form onSubmit={handleSubmit}>
+                            <Grid container sx={{ marginTop: 5 }}>
+                                <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                    <Typography sx={{ fontSize: '18px' }}>ชื่อ</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    <TextField id="firstname" name="firstname" fullWidth variant="outlined" />
+                                </Grid>
+                            </Grid>
+                            <Grid container sx={{ marginTop: 5 }}>
+                                <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                    <Typography sx={{ fontSize: '18px' }}>นามสกุล</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    <TextField id="lastname" name="lastname" fullWidth variant="outlined" />
+                                </Grid>
+                            </Grid>
+                            <Grid container sx={{ marginTop: 5 }}>
+                                <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                    <Typography sx={{ fontSize: '18px' }}>ตำแหน่ง</Typography>
+                                </Grid>
+                                <Grid xs={9}>
+                                    <Select id="role" name="role" value={role} onChange={changeRole} fullWidth>
+                                        <MenuItem value={1}>เจ้าหน้าที่โรงพยาบาล</MenuItem>
+                                        <MenuItem value={2}>ผู้อำนวยการโรงพยาบาล</MenuItem>
+                                        <MenuItem value={3}>เจ้าหน้าที่สาธารณสุข</MenuItem>
+                                        <MenuItem value={4}>ผู้ช่วยสาธารณสุข</MenuItem>
+                                        <MenuItem value={5}>ผู้อำนวยการสาธารณสุข</MenuItem>
+                                    </Select>
+                                </Grid>
+                            </Grid>
+                            {role === 1 || role === 2 ? (
+                                <>
+                                    <Grid container sx={{ marginTop: 5 }}>
+                                        <Grid xs={3} sx={{ alignSelf: 'center' }}>
+                                            <Typography sx={{ fontSize: '18px' }}>โรงพยาบาล</Typography>
+                                        </Grid>
+                                        <Grid xs={9}>
+                                            <Select id="hospital" name="hospital" value={hospital} onChange={handleChange} fullWidth>
+                                                {listHospital.map((item, key) => (
+                                                    <MenuItem value={item.hospital_id}>{item.hospital_name}</MenuItem>
+                                                ))}
+                                            </Select>
+                                        </Grid>
+                                    </Grid>
+                                </>
+                            ) : (
+                                ''
+                            )}
+                            <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                <Button variant="outlined" color="error" onClick={handleCloseEdit}>
+                                    ยกเลิก
+                                </Button>
+                                <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} type="submit">
+                                    ต่อไป
+                                </Button>
+                            </Box>
+                        </form>
+                    </DialogContentText>
+                </DialogContent>
+            </Dialog>
+
+            {/* ลบข้อมูลผู้ใช้ */}
             <Dialog
                 open={openDelete}
                 fullWidth={true}
@@ -320,7 +481,7 @@ const Users = () => {
                                 variant="outlined"
                                 color="success"
                                 sx={{ marginLeft: 3, borderRadius: 100 }}
-                                onClick={handleCloseDelete}
+                                onClick={handleSubmitDelete}
                             >
                                 ยืนยัน
                             </Button>

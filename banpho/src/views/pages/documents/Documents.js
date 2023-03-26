@@ -126,7 +126,6 @@ const Documents = () => {
 
     // เปิด Dialog การลบ
     const handleDeleteDocument = (row) => {
-        // setHistory(row);
         setOpenDelete(true);
         console.log('row =>', row);
         setDeleteId(row.code);
@@ -258,7 +257,6 @@ const Documents = () => {
         }
         event.target.elements.name.value = '';
         event.target.elements.detail.value = '';
-        // setFile(null);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
     const handleEdit = (row) => {
@@ -321,6 +319,59 @@ const Documents = () => {
             console.log(err);
         }
     };
+
+    // const downloadFile = (url) => {
+    //     console.log('eiei');
+    //     console.log(url);
+    //     fetch(url)
+    //         .then((response) => response.blob())
+    //         .then((blob) => {
+    //             const blobURL = window.URL.createObjectURL(blob); // fixed
+    //             const fileName = url.split('/').pop();
+    //             const aTag = document.createElement('a');
+    //             aTag.href = blobURL;
+    //             aTag.setAttribute('download', fileName);
+    //             document.body.appendChild(aTag);
+    //             aTag.click();
+    //             document.body.removeChild(aTag); // fixed
+    //         });
+    // };
+
+    // function downloadFile() {
+    //     axios({
+    //         url: 'http://localhost:7000/uploads/1679726846004nurse.png',
+    //         method: 'GET',
+    //         responseType: 'blob' // response type as a binary blob
+    //     }).then((response) => {
+    //         const url = window.URL.createObjectURL(new Blob([response.data]));
+    //         const link = document.createElement('a');
+    //         link.href = url;
+    //         link.setAttribute('download', 'file.png'); // set the download filename
+    //         document.body.appendChild(link);
+    //         link.click();
+    //     });
+    // }
+
+    function downloadFile(filePath) {
+        const fileUrl = `${window.location.origin}/${filePath}`;
+        fetch(fileUrl)
+            .then((response) => response.blob())
+            .then((blob) => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                if (typeof document !== 'undefined') {
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', filePath.split('/').pop());
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            });
+    }
+
+    function handleDownload() {
+        downloadFile('uploads/1679726846004nurse.png');
+    }
 
     const handleNext = (event) => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -491,7 +542,6 @@ const Documents = () => {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </Paper>
-
                 {/* กดสร้างเอกสาร */}
                 <Dialog maxWidth={'sm'} fullWidth={true} open={open} onClose={handleClose}>
                     <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
@@ -664,7 +714,6 @@ const Documents = () => {
                         )}
                     </DialogContent>
                 </Dialog>
-
                 {/* กดดวงตาตรวจสอบข้อมูลของเอกสาร */}
                 <Dialog
                     fullWidth={true}
@@ -731,6 +780,7 @@ const Documents = () => {
                                         {document?.document_file}
                                     </Typography>
                                 </Grid>
+                                <button onClick={handleDownload}>Download File</button>
                             </Grid>
 
                             <Grid container sx={{ padding: '15px' }}>
@@ -921,7 +971,6 @@ const Documents = () => {
                         </Box>
                     </DialogContent>
                 </Dialog>
-
                 {/* ลบเอกสาร */}
                 <Dialog open={openDelete} fullWidth={true} maxWidth={'sm'}>
                     <DialogTitle>
@@ -951,6 +1000,7 @@ const Documents = () => {
                     </DialogContent>
                 </Dialog>
 
+                {/* การแก้ไขเอกสาร */}
                 {/* การแก้ไขเอกสาร */}
                 <Dialog open={openEdit} onClose={handleCloseEdit} fullWidth={true} maxWidth={'sm'}>
                     <DialogTitle sx={{ backgroundColor: '#086c3c' }}>

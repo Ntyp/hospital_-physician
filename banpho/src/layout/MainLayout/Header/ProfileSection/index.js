@@ -34,6 +34,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import User1 from 'assets/images/users/nurse.png';
+import axios from 'axios';
 
 // assets
 import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons';
@@ -56,8 +57,23 @@ const ProfileSection = () => {
      * */
     const anchorRef = useRef(null);
     const handleLogout = async () => {
+        readAll();
         localStorage.removeItem('user_data');
         navigate('/login');
+    };
+
+    const readAll = () => {
+        const hospital = user.hospital_id;
+        const role = user.role_status;
+        axios
+            .put('http://localhost:7000/notification/read-all', {
+                hospital: hospital,
+                role: role
+            })
+            .then(function (response) {})
+            .catch(function (error) {
+                console.log(error);
+            });
     };
 
     const handleClose = (event) => {
@@ -186,16 +202,6 @@ const ProfileSection = () => {
                                                     }
                                                 }}
                                             >
-                                                {/* <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    selected={selectedIndex === 0}
-                                                    onClick={(event) => handleListItemClick(event, 0, '/user/account-profile/profile1')}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconSettings stroke={1.5} size="1.3rem" />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant="body2">Account Settings</Typography>} />
-                                                </ListItemButton> */}
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     selected={selectedIndex === 4}

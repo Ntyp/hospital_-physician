@@ -32,14 +32,36 @@ import axios from 'axios';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorIcon from '@mui/icons-material/Error';
+import EditIcon from '@mui/icons-material/Edit';
 
 const Hospital = () => {
-    const [hospital, setHospital] = useState();
+    const [hospital, setHospital] = useState([]);
     const [rows, setRows] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
     const [openCreate, setOpenCreate] = useState(false);
     const [openDelete, setOpenDelete] = useState(false);
+    const [openEdit, setOpenEdit] = useState(false);
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const name = event.target.elements.name.value;
+        const address = event.target.elements.address.value;
+        const phone = event.target.elements.phone.value;
+        axios
+            .post(`http://localhost:7000/hospital`, {
+                name: name,
+                address: address,
+                phone: phone
+            })
+            .then(function (response) {
+                getData();
+                setOpenCreate(false);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    };
 
     const handleOpen = () => {
         setOpenCreate(true);
@@ -49,7 +71,46 @@ const Hospital = () => {
         setOpenCreate(false);
     };
 
-    const handleCreate = () => {};
+    const handleOpenEdit = (row) => {
+        const name = row.hospital;
+        console.log(name);
+        axios
+            .get(`http://localhost:7000/hospital/${name}`)
+            .then((response) => {
+                const value = response?.data.data[0];
+                console.log(value);
+                setHospital(value);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+        setOpenEdit(true);
+    };
+
+    const handleCloseEdit = () => {
+        setOpenEdit(false);
+    };
+
+    const handleSubmitEdit = (event) => {
+        event.preventDefault();
+        const id = hospital?.hospital_id;
+        const name = event.target.elements.name.value;
+        const address = event.target.elements.address.value;
+        const phone = event.target.elements.phone.value;
+        axios
+            .put(`http://localhost:7000/hospital/${id}`, {
+                name: name,
+                address: address,
+                phone: phone
+            })
+            .then(function (response) {
+                getData();
+                setOpenEdit(false);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    };
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -61,12 +122,36 @@ const Hospital = () => {
     };
 
     // Delete
-    const handleOpenDelete = () => {
-        setOpenDelete(true);
+    const handleOpenDelete = (row) => {
+        const name = row.hospital;
+        console.log(name);
+        axios
+            .get(`http://localhost:7000/hospital/${name}`)
+            .then((response) => {
+                const value = response?.data.data[0];
+                console.log(value);
+                setOpenDelete(true);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     const handleCloseDelete = () => {
         setOpenDelete(false);
+    };
+
+    const handleSubmitDelete = () => {
+        const id = hospital?.hospital_id;
+        axios
+            .delete(`http://localhost:7000/hospital/${id}`)
+            .then((response) => {
+                getData();
+                setOpenDelete(false);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     useEffect(() => {
@@ -79,7 +164,7 @@ const Hospital = () => {
             .then((response) => {
                 const value = response?.data;
                 console.log(value);
-                setRows(value.map((item, index) => createData(index + 1, item.hospital_name)));
+                setRows(value.map((item, index) => createData(index + 1, item.hospital_name, item.hospital_address, item.hospital_tel)));
             })
             .catch((error) => {
                 console.error(error);
@@ -89,20 +174,27 @@ const Hospital = () => {
     const columns = [
         { id: 'order', label: 'ลำดับที่', maxWidth: 30 },
         { id: 'hospital', label: 'โรงพยาบาล', minWidth: 100 },
+        { id: 'address', label: 'ที่อยู่', minWidth: 100 },
+        { id: 'phone', label: 'เบอร์ติดต่อ', minWidth: 100 },
         {
             id: 'mange',
             label: 'จัดการ',
             minWidth: 50,
             render: (row) => (
-                <IconButton aria-label="check" color="error" onClick={() => handleOpenDelete(row)}>
-                    <DeleteIcon />
-                </IconButton>
+                <>
+                    <IconButton aria-label="edit" onClick={() => handleOpenEdit(row)}>
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton aria-label="check" color="error" onClick={() => handleOpenDelete(row)}>
+                        <DeleteIcon />
+                    </IconButton>
+                </>
             )
         }
     ];
 
-    function createData(order, hospital) {
-        return { order, hospital };
+    function createData(order, hospital, address, phone) {
+        return { order, hospital, address, phone };
     }
 
     return (
@@ -180,25 +272,23 @@ const Hospital = () => {
                     </Typography>
                 </DialogTitle>
                 <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        <Grid container sx={{ marginTop: 5 }}>
-                            <Grid xs={3} sx={{ alignSelf: 'center' }}>
-                                <Typography sx={{ alignSelf: 'center', fontSize: '18px' }}>ชื่อโรงพยาบาล</Typography>
-                            </Grid>
-                            <Grid xs={9}>
-                                <TextField fullWidth placeholder="กรุณาระบุ" variant="outlined" />
-                            </Grid>
-                        </Grid>
-                    </DialogContentText>
+                    <form onSubmit={handleSubmit}>
+                        <Typography sx={{ marginTop: 5, fontSize: '16px' }}>ชื่อโรงพยาบาล</Typography>
+                        <TextField margin="dense" id="name" name="name" type="text" fullWidth variant="outlined" />
+                        <Typography sx={{ marginTop: 2, fontSize: '16px' }}>ที่อยู่</Typography>
+                        <TextField margin="dense" id="address" name="address" multiline rows={4} type="text" fullWidth variant="outlined" />
+                        <Typography sx={{ marginTop: 2, fontSize: '16px' }}>เบอร์ติดต่อ</Typography>
+                        <TextField margin="dense" id="phone" name="phone" type="text" fullWidth variant="outlined" />
+                        <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                            <Button variant="outlined" color="error" onClick={handleClose}>
+                                ยกเลิก
+                            </Button>
+                            <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} type="submit">
+                                ยืนยัน
+                            </Button>
+                        </Box>
+                    </form>
                 </DialogContent>
-                <DialogActions>
-                    <Button variant="outlined" color="error" onClick={handleClose}>
-                        ปิด
-                    </Button>
-                    <Button variant="outlined" color="success" onClick={handleClose}>
-                        ยืนยัน
-                    </Button>
-                </DialogActions>
             </Dialog>
 
             <Dialog
@@ -228,12 +318,47 @@ const Hospital = () => {
                                 variant="outlined"
                                 color="success"
                                 sx={{ marginLeft: 3, borderRadius: 100 }}
-                                onClick={handleCloseDelete}
+                                onClick={handleSubmitDelete}
                             >
                                 ยืนยัน
                             </Button>
                         </Box>
                     </DialogContentText>
+                </DialogContent>
+            </Dialog>
+
+            {/* แก้ไขข้อมูลโรงพยาบาล */}
+            <Dialog open={openEdit} onClose={handleCloseEdit} fullWidth={true} maxWidth={'sm'}>
+                <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
+                    <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
+                        แบบฟอร์มการแก้ไขข้อมูล
+                    </Typography>
+                </DialogTitle>
+                <DialogContent>
+                    <form onSubmit={handleSubmitEdit}>
+                        <Typography sx={{ marginTop: 5, fontSize: '16px' }}>ชื่อโรงพยาบาล</Typography>
+                        <TextField
+                            margin="dense"
+                            id="name"
+                            name="name"
+                            type="text"
+                            fullWidth
+                            variant="outlined"
+                            value={hospital?.hospital_name}
+                        />
+                        <Typography sx={{ marginTop: 2, fontSize: '16px' }}>ที่อยู่</Typography>
+                        <TextField margin="dense" id="address" name="address" multiline rows={4} type="text" fullWidth variant="outlined" />
+                        <Typography sx={{ marginTop: 2, fontSize: '16px' }}>เบอร์ติดต่อ</Typography>
+                        <TextField margin="dense" id="phone" name="phone" type="text" fullWidth variant="outlined" />
+                        <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                            <Button variant="outlined" color="error" onClick={handleCloseEdit}>
+                                ยกเลิก
+                            </Button>
+                            <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} type="submit">
+                                ยืนยัน
+                            </Button>
+                        </Box>
+                    </form>
                 </DialogContent>
             </Dialog>
         </Card>

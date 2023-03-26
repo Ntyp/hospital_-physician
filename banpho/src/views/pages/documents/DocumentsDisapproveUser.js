@@ -127,7 +127,6 @@ const DocumentsDisapproveUser = () => {
 
     // เปิด Dialog การลบ
     const handleDeleteDocument = (row) => {
-        // setHistory(row);
         setOpenDelete(true);
         console.log('row =>', row);
         setDeleteId(row.code);
@@ -152,6 +151,7 @@ const DocumentsDisapproveUser = () => {
         setOpenDelete(false);
         setDeleteId(null);
     };
+
     const handleDownloadFile = (event) => {
         event.preventDefault();
         console.log('event =>', event);
@@ -223,7 +223,6 @@ const DocumentsDisapproveUser = () => {
         }
         event.target.elements.name.value = '';
         event.target.elements.detail.value = '';
-        // setFile(null);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
 
