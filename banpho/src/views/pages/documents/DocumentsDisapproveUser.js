@@ -34,6 +34,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { FileDownload } from '@mui/icons-material';
 import ErrorIcon from '@mui/icons-material/Error';
 import EditIcon from '@mui/icons-material/Edit';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const DocumentsDisapproveUser = () => {
     const [document, setDocument] = useState([]);
@@ -426,6 +427,12 @@ const DocumentsDisapproveUser = () => {
         setStatusDoc(null);
     };
 
+    function handleDownload(path) {
+        const file_path = path;
+        const download_url = `http://localhost:7000/download-file?file_path=${file_path}`;
+        window.location.href = download_url;
+    }
+
     return (
         <div>
             <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
@@ -718,10 +725,17 @@ const DocumentsDisapproveUser = () => {
                                 <Grid item xs={3}>
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>ไฟล์เอกสาร</Typography>
                                 </Grid>
-                                <Grid item xs={9}>
+                                <Grid item container xs={9} alignItems="center">
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
                                         {document?.document_file}
                                     </Typography>
+                                    <IconButton
+                                        aria-label="download"
+                                        size="small"
+                                        onClick={() => handleDownload(document?.document_file_path)}
+                                    >
+                                        <DownloadIcon />
+                                    </IconButton>
                                 </Grid>
                             </Grid>
 

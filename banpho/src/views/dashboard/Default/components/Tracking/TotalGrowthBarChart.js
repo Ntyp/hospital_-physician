@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import axios from 'axios';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -16,15 +17,49 @@ import MainCard from '../../../../../ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 
 // chart data
-import chartData from '../../chart-data/total-growth-bar-chart';
+// import chartData from '../../chart-data/total-growth-bar-chart';
 
 // ==============================|| DASHBOARD DEFAULT - TOTAL GROWTH BAR CHART ||============================== //
 
 const TotalGrowthBarChart = ({ isLoading }) => {
     const [value, setValue] = useState('today');
+    const [finish, setFinish] = useState([]);
+    const [process, setProcess] = useState([]);
     const theme = useTheme();
     const customization = useSelector((state) => state.customization);
+    useEffect(() => {
+        const userData = localStorage.getItem('user_data');
+        chartFinish(JSON.parse(userData));
+        chartProcess(JSON.parse(userData));
+    }, []);
 
+    function chartFinish(value) {
+        const id = value.hospital_id;
+        axios
+            .get(`http://localhost:7000/tracking-chart/${id}`)
+            .then((response) => {
+                console.log('response.data =>', response.data.data);
+                const value = response.data.data;
+                setFinish(value);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
+    function chartProcess(value) {
+        const id = value.hospital_id;
+        axios
+            .get(`http://localhost:7000/tracking-chart-process/${id}`)
+            .then((response) => {
+                console.log('response.data =>', response.data.data);
+                const value = response.data.data;
+                setProcess(value);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
     const { navType } = customization;
     const { primary } = theme.palette.text;
     const darkLight = theme.palette.dark.light;
@@ -38,6 +73,109 @@ const TotalGrowthBarChart = ({ isLoading }) => {
 
     const warningMain = theme.palette.warning.main;
     const successMain = theme.palette.success.main;
+
+    const chartData = {
+        height: 480,
+        type: 'bar',
+        options: {
+            chart: {
+                id: 'bar-chart',
+                stacked: true,
+                toolbar: {
+                    show: true
+                },
+                zoom: {
+                    enabled: true
+                }
+            },
+            responsive: [
+                {
+                    breakpoint: 480,
+                    options: {
+                        legend: {
+                            position: 'bottom',
+                            offsetX: -10,
+                            offsetY: 0
+                        }
+                    }
+                }
+            ],
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '50%'
+                }
+            },
+            xaxis: {
+                type: 'category',
+                categories: ['ม.ค.', 'ก.พ.', 'มี.ค', 'เม.ย', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.']
+            },
+            legend: {
+                show: true,
+                fontSize: '14px',
+                fontFamily: `'Kanit', sans-serif`,
+                position: 'bottom',
+                offsetX: 20,
+                labels: {
+                    useSeriesColors: false
+                },
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 5
+                },
+                itemMargin: {
+                    horizontal: 15,
+                    vertical: 8
+                }
+            },
+            fill: {
+                type: 'solid'
+            },
+            dataLabels: {
+                enabled: false
+            },
+            grid: {
+                show: true
+            }
+        },
+        series: [
+            {
+                name: 'อยู่ในกระบวนการ',
+                data: [
+                    process[0]?.count,
+                    process[1]?.count,
+                    process[2]?.count,
+                    process[3]?.count,
+                    process[4]?.count,
+                    process[5]?.count,
+                    process[6]?.count,
+                    process[7]?.count,
+                    process[8]?.count,
+                    process[9]?.count,
+                    process[10]?.count,
+                    process[11]?.count
+                ]
+            },
+            {
+                name: 'เสร็จสิ้น',
+                data: [
+                    finish[0]?.count,
+                    finish[1]?.count,
+                    finish[2]?.count,
+                    finish[3]?.count,
+                    finish[4]?.count,
+                    finish[5]?.count,
+                    finish[6]?.count,
+                    finish[7]?.count,
+                    finish[8]?.count,
+                    finish[9]?.count,
+                    finish[10]?.count,
+                    finish[11]?.count
+                ]
+            }
+        ]
+    };
 
     useEffect(() => {
         const newChartData = {

@@ -10,6 +10,7 @@ const cors = require("cors");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const fileUpload = require("express-fileupload");
+const fs = require("fs");
 const jsonParser = bodyParser.json();
 const port = 7000;
 
@@ -320,9 +321,129 @@ app.put("/trackingfinish/:id", jsonParser, (req, res) => {
   );
 });
 
+// chart tracking
+// chart finish
+app.get("/tracking-chart/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]]; // โรงพยาบาล
+  const status_finish = "เสร็จสิ้น";
+  const month = 12;
+  const year = new Date().getFullYear();
+  let resultsArray = [];
+  let count = 0;
+  for (let i = 1; i <= month; i++) {
+    connection.query(
+      "SELECT COUNT(tracking_id) FROM tracking WHERE MONTH(date_at) = ? AND YEAR(date_at) = ? AND hospital_id = ? AND tracking_status = ?",
+      [i, year, id, status_finish],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        resultsArray.push({
+          month: i,
+          count: results[0]["COUNT(tracking_id)"],
+        });
+        count++;
+        if (count === month) {
+          res.json({ status: "ok", data: resultsArray });
+        }
+      }
+    );
+  }
+});
+
+app.get("/tracking-chart-process/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]]; // โรงพยาบาล
+  const status_finish = "เสร็จสิ้น";
+  const month = 12;
+  const year = new Date().getFullYear();
+  let resultsArray = [];
+  let count = 0;
+  for (let i = 1; i <= month; i++) {
+    connection.query(
+      "SELECT COUNT(tracking_id) FROM tracking WHERE MONTH(date_at) = ? AND YEAR(date_at) = ? AND hospital_id = ? AND tracking_status != ?",
+      [i, year, id, status_finish],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        resultsArray.push({
+          month: i,
+          count: results[0]["COUNT(tracking_id)"],
+        });
+        count++;
+        if (count === month) {
+          res.json({ status: "ok", data: resultsArray });
+        }
+      }
+    );
+  }
+});
+
 // ==============================================
 // ============== ระบบ Document ==================
 // ==============================================
+
+// chart document
+app.get("/document-chart/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]]; // โรงพยาบาล
+  const month = 12;
+  const year = new Date().getFullYear();
+  let resultsArray = [];
+  let count = 0;
+  let status_finish = 5;
+  for (let i = 1; i <= month; i++) {
+    connection.query(
+      "SELECT COUNT(document_id) FROM document WHERE MONTH(created_at) = ? AND YEAR(created_at) = ? AND hospital_id = ? AND document_status = ?",
+      [i, year, id, status_finish],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        resultsArray.push({
+          month: i,
+          count: results[0]["COUNT(document_id)"],
+        });
+        count++;
+        if (count === month) {
+          res.json({ status: "ok", data: resultsArray });
+        }
+      }
+    );
+  }
+});
+
+// chart document
+app.get("/document-chart-process/:id", jsonParser, (req, res) => {
+  const id = [req.params["id"]]; // โรงพยาบาล
+  const month = 12;
+  const year = new Date().getFullYear();
+  let resultsArray = [];
+  let count = 0;
+  let status_finish = 5;
+  for (let i = 1; i <= month; i++) {
+    connection.query(
+      "SELECT COUNT(document_id) FROM document WHERE MONTH(created_at) = ? AND YEAR(created_at) = ? AND hospital_id = ? AND document_status != ?",
+      [i, year, id, status_finish],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        resultsArray.push({
+          month: i,
+          count: results[0]["COUNT(document_id)"],
+        });
+        count++;
+        if (count === month) {
+          res.json({ status: "ok", data: resultsArray });
+        }
+      }
+    );
+  }
+});
 
 // สร้างคำร้อง
 app.post("/document", jsonParser, (req, res) => {
@@ -1155,6 +1276,17 @@ app.post("/upload", (req, res) => {
         .send({ msg: "Error occurred while uploading file" });
     }
     return res.send({ name: myFile.name, path: `/uploads/${filename}` });
+  });
+});
+
+app.get("/download-file", (req, res) => {
+  const file_path = req.query.file_path;
+  const file_name = path.basename(file_path); // get file name from path
+  res.download(`../backend${file_path}`, file_name, (err) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send("Error downloading file");
+    }
   });
 });
 

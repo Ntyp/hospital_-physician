@@ -26,7 +26,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import UnpublishedRoundedIcon from '@mui/icons-material/UnpublishedRounded';
-// import DeleteIcon from '@material-ui/icons/Delete';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const DocumentsWaiting = () => {
     const [user, setUser] = useState();
@@ -73,7 +73,8 @@ const DocumentsWaiting = () => {
                             item.document_title,
                             item.document_file,
                             item.created_by,
-                            item.document_detail
+                            item.document_detail,
+                            item.document_file_path
                         )
                     )
                 );
@@ -106,12 +107,24 @@ const DocumentsWaiting = () => {
                     </IconButton>
                 </>
             )
+        },
+        {
+            id: 'file',
+            label: 'ไฟล์',
+            minWidth: 100,
+            render: (row) => (
+                <>
+                    <IconButton aria-label="approve" onClick={() => handleDownload(row.path)}>
+                        <DownloadIcon />
+                    </IconButton>
+                </>
+            )
         }
     ];
 
-    function createData(order, date, code, topic, document, reporter, detail) {
+    function createData(order, date, code, topic, document, reporter, detail, path) {
         const formattedDate = moment(date).format('YYYY-MM-DD');
-        return { order, date: formattedDate, code, topic, document, reporter, detail };
+        return { order, date: formattedDate, code, topic, document, reporter, detail, path };
     }
 
     const handleClickOpenApprove = (row) => {
@@ -202,6 +215,12 @@ const DocumentsWaiting = () => {
                 console.log(error);
             });
     };
+
+    function handleDownload(path) {
+        const file_path = path;
+        const download_url = `http://localhost:7000/download-file?file_path=${file_path}`;
+        window.location.href = download_url;
+    }
 
     return (
         <div>

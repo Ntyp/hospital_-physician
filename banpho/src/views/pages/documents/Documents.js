@@ -34,6 +34,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { FileDownload } from '@mui/icons-material';
 import ErrorIcon from '@mui/icons-material/Error';
 import EditIcon from '@mui/icons-material/Edit';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const Documents = () => {
     const [document, setDocument] = useState([]);
@@ -320,57 +321,10 @@ const Documents = () => {
         }
     };
 
-    // const downloadFile = (url) => {
-    //     console.log('eiei');
-    //     console.log(url);
-    //     fetch(url)
-    //         .then((response) => response.blob())
-    //         .then((blob) => {
-    //             const blobURL = window.URL.createObjectURL(blob); // fixed
-    //             const fileName = url.split('/').pop();
-    //             const aTag = document.createElement('a');
-    //             aTag.href = blobURL;
-    //             aTag.setAttribute('download', fileName);
-    //             document.body.appendChild(aTag);
-    //             aTag.click();
-    //             document.body.removeChild(aTag); // fixed
-    //         });
-    // };
-
-    // function downloadFile() {
-    //     axios({
-    //         url: 'http://localhost:7000/uploads/1679726846004nurse.png',
-    //         method: 'GET',
-    //         responseType: 'blob' // response type as a binary blob
-    //     }).then((response) => {
-    //         const url = window.URL.createObjectURL(new Blob([response.data]));
-    //         const link = document.createElement('a');
-    //         link.href = url;
-    //         link.setAttribute('download', 'file.png'); // set the download filename
-    //         document.body.appendChild(link);
-    //         link.click();
-    //     });
-    // }
-
-    function downloadFile(filePath) {
-        const fileUrl = `${window.location.origin}/${filePath}`;
-        fetch(fileUrl)
-            .then((response) => response.blob())
-            .then((blob) => {
-                const url = window.URL.createObjectURL(new Blob([blob]));
-                if (typeof document !== 'undefined') {
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', filePath.split('/').pop());
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
-            });
-    }
-
-    function handleDownload() {
-        downloadFile('uploads/1679726846004nurse.png');
+    function handleDownload(path) {
+        const file_path = path;
+        const download_url = `http://localhost:7000/download-file?file_path=${file_path}`;
+        window.location.href = download_url;
     }
 
     const handleNext = (event) => {
@@ -775,12 +729,18 @@ const Documents = () => {
                                 <Grid item xs={3}>
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>ไฟล์เอกสาร</Typography>
                                 </Grid>
-                                <Grid item xs={9}>
+                                <Grid item container xs={9} alignItems="center">
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
                                         {document?.document_file}
                                     </Typography>
+                                    <IconButton
+                                        aria-label="download"
+                                        size="small"
+                                        onClick={() => handleDownload(document?.document_file_path)}
+                                    >
+                                        <DownloadIcon />
+                                    </IconButton>
                                 </Grid>
-                                <button onClick={handleDownload}>Download File</button>
                             </Grid>
 
                             <Grid container sx={{ padding: '15px' }}>
