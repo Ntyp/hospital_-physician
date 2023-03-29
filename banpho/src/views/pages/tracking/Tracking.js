@@ -103,7 +103,7 @@ const Tracking = () => {
                 let status = response.data.data[0].tracking_status;
                 if (status == 'จัดส่งอุปกรณ์และเครื่องมือ') {
                     setActiveStepTracking(1);
-                } else if (status == 'รับอุปกรณ์เรียบร้อย') {
+                } else if (status == 'รับอุปกรณ์ฆ่าเชื้อเรียบร้อย') {
                     setActiveStepTracking(2);
                 } else if (status == 'เสร็จสิ้น') {
                     setActiveStepTracking(3);
@@ -160,7 +160,7 @@ const Tracking = () => {
             label: 'จัดส่งอุปกรณ์และเครื่องมือ'
         },
         {
-            label: 'รับอุปกรณ์เรียบร้อย'
+            label: 'รับอุปกรณ์ฆ่าเชื้อเรียบร้อย'
         },
         {
             label: 'เสร็จสิ้น'
@@ -513,125 +513,6 @@ const Tracking = () => {
                     </DialogContent>
                 </Dialog>
 
-                {/* <Dialog
-                    open={openCheck}
-                    fullWidth={true}
-                    maxWidth={'sm'}
-                    onClose={handleCloseCheck}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                    <DialogTitle id="alert-dialog-title" sx={{ backgroundColor: '#086c3c' }}>
-                        <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
-                            รายละเอียดการนำส่งอุปกรณ์-เครื่องมือการแพทย์
-                        </Typography>
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-description">
-                            <p style={{ fontSize: '16px', backgroundColor: '#f2f2f2', padding: 15 }}>ผู้ส่ง:{history.tracking_sender}</p>
-                            <p style={{ fontSize: '16px', padding: 15 }}>รหัสชุด: {history.group_id}</p>
-                            <p style={{ fontSize: '16px', backgroundColor: '#f2f2f2', padding: 15 }}>
-                                วันที่ส่ง: {moment(history.date_at).format('YYYY-MM-DD')}
-                            </p>
-                            <p style={{ fontSize: '16px', padding: 15 }}>อุปกรณ์ที่ส่ง:</p>
-                            <ol>
-                                {showItem.map((item, key) => (
-                                    <li style={{ fontSize: '16px' }} key={key}>
-                                        {item.equipment_name} จำนวน: {item.equipment_quantity}
-                                    </li>
-                                ))}
-                            </ol>
-                            <p style={{ fontSize: '16px', backgroundColor: '#f2f2f2', padding: 15 }}>สถานะ: {history.tracking_status}</p>
-                            <Stepper activeStep={activeStepTracking} orientation="vertical" style={{ backgroundColor: 'white' }}>
-                                {stepsTracking.map((step, index) => (
-                                    <Step
-                                        key={step.label}
-                                        sx={{
-                                            '& .MuiStepLabel-root .Mui-completed': {
-                                                color: 'success.main' // circle color (COMPLETED)
-                                            },
-                                            '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel': {
-                                                color: 'grey.500' // Just text label (COMPLETED)
-                                            },
-                                            '& .MuiStepLabel-root .Mui-active': {
-                                                color: 'success.main' // circle color (ACTIVE)
-                                            },
-                                            '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel': {
-                                                color: 'common.white' // Just text label (ACTIVE)
-                                            },
-                                            '& .MuiStepLabel-root .Mui-active .MuiStepIcon-text': {
-                                                fill: 'white' // circle's number (ACTIVE)
-                                            }
-                                        }}
-                                    >
-                                        <StepLabel
-                                            style={{
-                                                color: index === activeStepTracking ? '#086c3c' : 'gray',
-                                                fontSize: '16px'
-                                            }}
-                                        >
-                                            {step.label}
-                                            {index == 1 ? (
-                                                <>
-                                                    {history.tracking_recipient != null ? (
-                                                        <>
-                                                            <br />
-                                                            <span style={{ color: 'red' }}>
-                                                                ผู้รับอุปกรณ์: {history.tracking_recipient}
-                                                            </span>
-                                                        </>
-                                                    ) : (
-                                                        ''
-                                                    )}
-                                                    {history.tracking_meet_date != null ? (
-                                                        <>
-                                                            <br />
-                                                            <span style={{ color: 'red' }}>
-                                                                วันนัดรับอุปกรณ์:
-                                                                {moment(history.tracking_meet_date).format('YYYY-MM-DD')}
-                                                            </span>
-                                                        </>
-                                                    ) : (
-                                                        ''
-                                                    )}
-                                                </>
-                                            ) : (
-                                                ''
-                                            )}
-                                            {activeStepTracking === 3 && index === 2 && (
-                                                <>
-                                                    {history.tracking_sender != null ? (
-                                                        <>
-                                                            <br />
-                                                            <span style={{ color: 'red' }}>ผู้รับอุปกรณ์: {history.tracking_sender}</span>
-                                                        </>
-                                                    ) : (
-                                                        ''
-                                                    )}
-                                                    {history.tracking_meet_date != null ? (
-                                                        <>
-                                                            <br />
-                                                            <span style={{ color: 'red' }}>
-                                                                วันรับอุปกรณ์:
-                                                                {moment(history.tracking_meet_date).format('DD-MM-YYYY')}
-                                                            </span>
-                                                        </>
-                                                    ) : (
-                                                        ''
-                                                    )}
-                                                </>
-                                            )}
-                                        </StepLabel>
-                                    </Step>
-                                ))}
-                            </Stepper>
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseCheck}>ปิด</Button>
-                    </DialogActions>
-                </Dialog> */}
-
                 <Dialog
                     fullWidth={true}
                     maxWidth={'sm'}
@@ -709,36 +590,6 @@ const Tracking = () => {
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>สถานะการอนุมัติ</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    {/* <Stepper activeStep={activeStepDoc} orientation="vertical" sx={{ marginTop: 3 }}>
-                                        {stepsDocuments.map((step, index) => (
-                                            <Step
-                                                key={step.label}
-                                                sx={{
-                                                    '& .MuiStepLabel-root .Mui-completed': {
-                                                        color: 'success.main' // circle color (COMPLETED)
-                                                    },
-                                                    '& .MuiStepLabel-label.Mui-completed.MuiStepLabel-alternativeLabel': {
-                                                        color: 'grey.500' // Just text label (COMPLETED)
-                                                    },
-                                                    '& .MuiStepLabel-root .Mui-active': {
-                                                        color: 'success.main' // circle color (ACTIVE)
-                                                    },
-                                                    '& .MuiStepLabel-label.Mui-active.MuiStepLabel-alternativeLabel': {
-                                                        color: 'common.white' // Just text label (ACTIVE)
-                                                    },
-                                                    '& .MuiStepLabel-root .Mui-active .MuiStepIcon-text': {
-                                                        fill: 'white' // circle's number (ACTIVE)
-                                                    }
-                                                }}
-                                            >
-                                                <StepLabel>
-                                                    <p style={{ fontSize: '16px' }}>{step.label}</p>
-                                                    {activeStepDoc == index ? 'รอการอนุมัติ' : ''}
-                                                    {activeStepDoc > index ? 'ผ่านการอนุมัติ' : ''}
-                                                </StepLabel>
-                                            </Step>
-                                        ))}
-                                    </Stepper> */}
                                     <Stepper activeStep={activeStepTracking} orientation="vertical" sx={{ marginTop: 3 }}>
                                         {stepsTracking.map((step, index) => (
                                             <Step
