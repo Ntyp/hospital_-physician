@@ -670,7 +670,7 @@ app.get("/documents-disapprove/:id/:role", jsonParser, (req, res) => {
     );
   } else {
     connection.query(
-      "SELECT * FROM approval INNER JOIN document ON ON approval.document_code = document.document_code  WHERE approver_id = ? AND approval_hospital = ? AND approval_status = ?",
+      "SELECT * FROM approval INNER JOIN document ON approval.document_code = document.document_code  WHERE approver_id = ? AND approval_hospital = ? AND approval_status = ?",
       [approval_status, hospital_id, 2],
       function (err, results) {
         if (err) {
