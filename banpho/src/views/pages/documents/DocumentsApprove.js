@@ -13,7 +13,14 @@ import {
     TableContainer,
     TableHead,
     TablePagination,
-    TableRow
+    TableRow,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Box,
+    IconButton
 } from '@mui/material';
 
 const DocumentsApprove = () => {
@@ -21,6 +28,7 @@ const DocumentsApprove = () => {
     const [rows, setRows] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -68,6 +76,11 @@ const DocumentsApprove = () => {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
+    const filteredRows = rows.filter((row) => {
+        return Object.values(row).some((value) => {
+            return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+        });
+    });
 
     return (
         <div>
@@ -75,7 +88,18 @@ const DocumentsApprove = () => {
                 <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
                     อนุมัติแล้ว
                 </Typography>
-
+                <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 3, marginTop: 3 }}>
+                    <Typography sx={{ fontWeight: 500 }}>ค้นหา</Typography>
+                    <TextField
+                        margin="dense"
+                        id="search"
+                        name="search"
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{ marginLeft: 3, width: '75%' }}
+                    />
+                </Box>
                 <Paper
                     sx={{
                         width: '100%',
@@ -98,10 +122,10 @@ const DocumentsApprove = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows.map((row) => (
+                                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                                     <TableRow key={row.order}>
                                         {columns.map((column) => (
-                                            <TableCell key={column.id} align="left">
+                                            <TableCell key={column.id} align="center">
                                                 {column.render ? column.render(row) : row[column.id]}
                                             </TableCell>
                                         ))}

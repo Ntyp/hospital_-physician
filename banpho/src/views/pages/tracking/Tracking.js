@@ -28,13 +28,15 @@ import {
     StepLabel,
     Grid,
     Select,
-    MenuItem
+    MenuItem,
+    InputAdornment
 } from '@mui/material';
 import axios from 'axios';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import ErrorIcon from '@mui/icons-material/Error';
+import SearchIcon from '@mui/icons-material/Search';
 
 const Tracking = () => {
     const [user, setUser] = useState();
@@ -52,6 +54,7 @@ const Tracking = () => {
     const [activeStep, setActiveStep] = useState(0);
     const [activeStepTracking, setActiveStepTracking] = useState(0);
     const [selectedEquipment, setSelectedEquipment] = useState();
+    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -280,12 +283,34 @@ const Tracking = () => {
         setSelectedEquipment(value);
     };
 
+    const searchValue = () => {
+        //
+    };
+
+    const filteredRows = rows.filter((row) => {
+        return Object.values(row).some((value) => {
+            return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+        });
+    });
+
     return (
         <div>
             <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
                 <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
                     การนำส่งอุปกรณ์
                 </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 3, marginTop: 3 }}>
+                    <Typography sx={{ fontWeight: 500 }}>ค้นหา</Typography>
+                    <TextField
+                        margin="dense"
+                        id="search"
+                        name="search"
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{ marginLeft: 3, width: '75%' }}
+                    />
+                </Box>
                 <Button
                     variant="outlined"
                     onClick={handleClickOpen}
@@ -317,7 +342,7 @@ const Tracking = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows.map((row) => (
+                                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                                     <TableRow key={row.order}>
                                         {columns.map((column) => (
                                             <TableCell key={column.id} align="center">

@@ -35,6 +35,7 @@ import { FileDownload } from '@mui/icons-material';
 import ErrorIcon from '@mui/icons-material/Error';
 import EditIcon from '@mui/icons-material/Edit';
 import DownloadIcon from '@mui/icons-material/Download';
+import MUIDataTable from 'mui-datatables';
 
 const Documents = () => {
     const [document, setDocument] = useState([]);
@@ -62,6 +63,7 @@ const Documents = () => {
     const [version, setVersion] = useState(1);
     const [approver, setApprover] = useState([]);
     const [disapprover, setDisApprover] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -75,7 +77,7 @@ const Documents = () => {
         axios
             .get(`http://localhost:7000/documents-wait/${id}`)
             .then((response) => {
-                console.log(response.data.data);
+                console.log(response.data.data); // ข้อมูลเอกสาร
                 let value = response.data.data;
                 setRows(
                     value.map((item, index) =>
@@ -392,6 +394,7 @@ const Documents = () => {
             });
     }
 
+    // แสดงการอนุมัติเอกสาร
     function getApprover(value, value1) {
         const code = value; //document_code
         const version = value1; //document_version
@@ -409,6 +412,7 @@ const Documents = () => {
             });
     }
 
+    // แสดงรายละเอียดการไม่อนุมัติเอกสาร
     function getDisapprove(value) {
         const code = value;
         axios
@@ -431,6 +435,12 @@ const Documents = () => {
         setStatusDoc(null);
     };
 
+    const filteredRows = rows.filter((row) => {
+        return Object.values(row).some((value) => {
+            return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+        });
+    });
+
     return (
         <div>
             <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
@@ -439,6 +449,18 @@ const Documents = () => {
                         รอการอนุมัติ
                     </Typography>
                 </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 3, marginTop: 3 }}>
+                    <Typography sx={{ fontWeight: 500 }}>ค้นหา</Typography>
+                    <TextField
+                        margin="dense"
+                        id="search"
+                        name="search"
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{ marginLeft: 3, width: '75%' }}
+                    />
+                </Box>
                 <Button
                     variant="outlined"
                     onClick={handleClickOpen}
@@ -473,7 +495,7 @@ const Documents = () => {
                             </TableHead>
                             {/* เนื้อหาภายใน */}
                             <TableBody>
-                                {rows.map((row) => (
+                                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                                     <TableRow key={row.order}>
                                         {columns.map((column) => (
                                             <TableCell key={column.id} align="center">

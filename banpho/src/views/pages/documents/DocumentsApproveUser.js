@@ -60,6 +60,7 @@ const DocumentsApproveUser = () => {
     const [statusDoc, setStatusDoc] = useState('');
     const [approver, setApprover] = useState([]);
     const [disapprover, setDisApprover] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -264,6 +265,12 @@ const DocumentsApproveUser = () => {
         window.location.href = download_url;
     }
 
+    const filteredRows = rows.filter((row) => {
+        return Object.values(row).some((value) => {
+            return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+        });
+    });
+
     return (
         <div>
             <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
@@ -272,6 +279,18 @@ const DocumentsApproveUser = () => {
                         อนุมัติเรียบร้อย
                     </Typography>
                 </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 3, marginTop: 3 }}>
+                    <Typography sx={{ fontWeight: 500 }}>ค้นหา</Typography>
+                    <TextField
+                        margin="dense"
+                        id="search"
+                        name="search"
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{ marginLeft: 3, width: '75%' }}
+                    />
+                </Box>
                 <Paper
                     sx={{
                         width: '100%',
@@ -294,7 +313,7 @@ const DocumentsApproveUser = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows.map((row) => (
+                                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                                     <TableRow key={row.order}>
                                         {columns.map((column) => (
                                             <TableCell key={column.id} align="center">

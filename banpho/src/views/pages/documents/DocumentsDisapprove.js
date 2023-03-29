@@ -30,6 +30,7 @@ const DocumentsDisapprove = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(0);
     const [open, setOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
@@ -93,6 +94,11 @@ const DocumentsDisapprove = () => {
     const handleClose = () => {
         setOpen(false);
     };
+    const filteredRows = rows.filter((row) => {
+        return Object.values(row).some((value) => {
+            return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+        });
+    });
 
     const handleSubmit = (event) => {};
     return (
@@ -101,7 +107,18 @@ const DocumentsDisapprove = () => {
                 <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
                     ไม่อนุมัติ
                 </Typography>
-
+                <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 3, marginTop: 3 }}>
+                    <Typography sx={{ fontWeight: 500 }}>ค้นหา</Typography>
+                    <TextField
+                        margin="dense"
+                        id="search"
+                        name="search"
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{ marginLeft: 3, width: '75%' }}
+                    />
+                </Box>
                 <Paper
                     sx={{
                         width: '100%',
@@ -131,10 +148,10 @@ const DocumentsDisapprove = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows.map((row) => (
+                                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                                     <TableRow key={row.order}>
                                         {columns.map((column) => (
-                                            <TableCell key={column.id} align="left">
+                                            <TableCell key={column.id} align="center">
                                                 {column.render ? column.render(row) : row[column.id]}
                                             </TableCell>
                                         ))}
