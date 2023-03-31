@@ -64,7 +64,7 @@ const DocumentsApprove = () => {
     ];
 
     function createData(order, date, topic, reporter, detail) {
-        const formattedDate = moment(date).format('YYYY-MM-DD');
+        const formattedDate = moment(date).format('DD-MM-YYYY');
         return { order, date: formattedDate, topic, reporter, detail };
     }
 
@@ -115,7 +115,7 @@ const DocumentsApprove = () => {
                             <TableHead>
                                 <TableRow>
                                     {columns.map((column) => (
-                                        <TableCell key={column.id} align="left" style={{ minWidth: column.minWidth }}>
+                                        <TableCell key={column.id} align="center" style={{ minWidth: column.minWidth }}>
                                             {column.label}
                                         </TableCell>
                                     ))}

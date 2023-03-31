@@ -165,7 +165,7 @@ const DocumentsApproveUser = () => {
     ];
 
     function createData(order, date, code, topic, reporter, status) {
-        const formattedDate = `${moment(date).format('YYYY-MM-DD')}`;
+        const formattedDate = `${moment(date).format('DD-MM-YYYY')}`;
         return { order, date: formattedDate, code, topic, reporter, status };
     }
 
@@ -386,9 +386,7 @@ const DocumentsApproveUser = () => {
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>วันที่ส่ง</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
-                                        {moment(history.date).format('DD-MM-YYYY')}
-                                    </Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>{history.date}</Typography>
                                 </Grid>
                             </Grid>
 

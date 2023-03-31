@@ -70,9 +70,23 @@ if (role === 'hospital staff') {
                 },
                 {
                     id: 'tracking',
-                    title: 'การนำส่งอุปกรณ์',
+                    title: 'จัดส่งอุปกรณ์การแพทย์',
                     type: 'item',
                     url: '/tracking',
+                    target: true
+                },
+                {
+                    id: 'tracking',
+                    title: 'กระบวนการฆ่าเชื้อ',
+                    type: 'item',
+                    url: '/tracking-process',
+                    target: true
+                },
+                {
+                    id: 'tracking',
+                    title: 'รับอุปกรณ์คืนเรียบร้อย',
+                    type: 'item',
+                    url: '/tracking-success',
                     target: true
                 }
             ]
@@ -92,13 +106,6 @@ if (role === 'hospital staff') {
                     url: '/dashboard-document',
                     target: true
                 },
-                // {
-                //     id: 'documents',
-                //     title: 'การนำส่งเอกสาร',
-                //     type: 'item',
-                //     url: '/documents',
-                //     target: true
-                // },
                 {
                     id: 'documents',
                     title: 'รอการอนุมัติ',

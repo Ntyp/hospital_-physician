@@ -47,8 +47,7 @@ const Login = () => {
                         // navigate('/home');
                         window.location.href = 'http://localhost:3000/home';
                     } else {
-                        // navigate('/');
-                        window.location.href = 'http://localhost:3000/';
+                        window.location.href = 'http://localhost:3000/dashboard-documents';
                     }
                 } else {
                     console.log('error');

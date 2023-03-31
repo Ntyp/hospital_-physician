@@ -60,7 +60,7 @@ const Notification = () => {
     ];
 
     function createData(order, date, topic) {
-        const formattedDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
+        const formattedDate = moment(date).format('DD-MM-YYYY HH:mm:ss');
         return { order, date: formattedDate, topic };
     }
 
@@ -82,7 +82,11 @@ const Notification = () => {
                 role: role
             })
             .then(function (response) {
-                window.location.reload();
+                if (role == 1) {
+                    window.location.reload();
+                } else {
+                    window.location.href = 'http://localhost:3000/report-documents';
+                }
             })
             .catch(function (error) {
                 console.log(error);
@@ -113,19 +117,12 @@ const Notification = () => {
                     padding: '30px'
                 }}
             >
-                {/* <Button
-                        variant="contained"
-                        onClick={handleClickOpen}
-                        sx={{ float: 'left', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
-                    >
-                        Export
-                    </Button> */}
                 <TableContainer>
                     <Table>
                         <TableHead>
                             <TableRow>
                                 {columns.map((column) => (
-                                    <TableCell key={column.id} align="left" style={{ minWidth: column.minWidth }}>
+                                    <TableCell key={column.id} align="center" style={{ minWidth: column.minWidth }}>
                                         {column.label}
                                     </TableCell>
                                 ))}
@@ -135,7 +132,7 @@ const Notification = () => {
                             {rows.map((row) => (
                                 <TableRow key={row.order}>
                                     {columns.map((column) => (
-                                        <TableCell key={column.id} align="left">
+                                        <TableCell key={column.id} align="center">
                                             {column.render ? column.render(row) : row[column.id]}
                                         </TableCell>
                                     ))}

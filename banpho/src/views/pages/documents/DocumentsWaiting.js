@@ -124,7 +124,7 @@ const DocumentsWaiting = () => {
     ];
 
     function createData(order, date, code, topic, document, reporter, detail, path) {
-        const formattedDate = moment(date).format('YYYY-MM-DD');
+        const formattedDate = moment(date).format('DD-MM-YYYY');
         return { order, date: formattedDate, code, topic, document, reporter, detail, path };
     }
 
@@ -262,7 +262,7 @@ const DocumentsWaiting = () => {
                             <TableHead>
                                 <TableRow>
                                     {columns.map((column) => (
-                                        <TableCell key={column.id} align="left" style={{ minWidth: column.minWidth }}>
+                                        <TableCell key={column.id} align="center" style={{ minWidth: column.minWidth }}>
                                             {column.label}
                                         </TableCell>
                                     ))}

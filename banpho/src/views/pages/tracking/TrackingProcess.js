@@ -34,11 +34,10 @@ import {
 import axios from 'axios';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
 import ErrorIcon from '@mui/icons-material/Error';
 import SearchIcon from '@mui/icons-material/Search';
 
-const Tracking = () => {
+const TrackingProcess = () => {
     const [user, setUser] = useState();
     const [rows, setRows] = useState([]);
     const [item, setItem] = useState();
@@ -67,7 +66,7 @@ const Tracking = () => {
 
     function getData(value) {
         const id = value.user_id;
-        const status = 'จัดส่งอุปกรณ์และเครื่องมือ';
+        const status = 'รับอุปกรณ์ฆ่าเชื้อเรียบร้อย';
         axios
             .get(`http://localhost:7000/tracking/${id}/${status}`)
             .then((response) => {
@@ -129,11 +128,6 @@ const Tracking = () => {
         setOpenCheck(true);
     };
 
-    const handleQrcode = (row) => {
-        console.log('row =>', row);
-        navigate('/tracking-qrcode', { state: { params: row.track } });
-    };
-
     // เซตหัวข้อ columns
     const columns = [
         { id: 'order', label: 'ลำดับที่', minWidth: 100 },
@@ -150,9 +144,6 @@ const Tracking = () => {
                 <>
                     <IconButton aria-label="check" onClick={() => handleCheck(row)}>
                         <VisibilityRoundedIcon />
-                    </IconButton>
-                    <IconButton aria-label="check" onClick={() => handleQrcode(row)}>
-                        <QrCode2Icon />
                     </IconButton>
                 </>
             )
@@ -187,41 +178,8 @@ const Tracking = () => {
         setPage(0);
     };
 
-    const handleClickOpen = () => {
-        setOpen(true);
-        randomTrack();
-    };
-
     const handleClose = () => {
         setOpen(false);
-    };
-
-    const handleSaveForm = () => {
-        axios
-            .post('http://localhost:7000/create-tracking', {
-                id: track,
-                items: equipment,
-                count: equipment.length,
-                sender: user.user_firstname + ' ' + user.user_lastname,
-                date: moment().format('YYYY-MM-DD'),
-                user_id: user.user_id,
-                hospital: user.hospital_id,
-                place: user.user_place
-            })
-            .then(function (response) {
-                console.log(response);
-                const value = response.data;
-                if (value.status == 'ok') {
-                    getData(user);
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-
-        setOpen(false);
-        setActiveStep(0);
-        setEquipment([]);
     };
 
     const handleSubmit = (event) => {
@@ -238,21 +196,6 @@ const Tracking = () => {
             setSelectedEquipment(null);
             event.target.elements.quantity.value = '';
         }
-    };
-
-    const handleDeleteEquipment = (key) => {
-        // Remove the item from the equipment array using its key value as the index
-        setEquipment((prevEquipment) => prevEquipment.filter((item, index) => index !== key));
-    };
-
-    // สุ่ม Track
-    const randomTrack = () => {
-        var track = `BPTH-${user.hospital_id}${moment().format('YYYYMMDDHHmmss')}`;
-        setTrack(track);
-    };
-
-    const handleClickOpenCheck = () => {
-        setOpenCheck(true);
     };
 
     const handleCloseCheck = () => {
@@ -298,7 +241,7 @@ const Tracking = () => {
         <div>
             <Card sx={{ minWidth: 275, minHeight: '100vh' }}>
                 <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
-                    จัดส่งอุปกรณ์การแพทย์
+                    กระบวนการฆ่าเชื้อ
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 3, marginTop: 3 }}>
                     <Typography sx={{ fontWeight: 500 }}>ค้นหา</Typography>
@@ -312,15 +255,6 @@ const Tracking = () => {
                         sx={{ marginLeft: 3, width: '75%' }}
                     />
                 </Box>
-                <Button
-                    variant="outlined"
-                    onClick={handleClickOpen}
-                    sx={{ float: 'right', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
-                    color="success"
-                    startIcon={<AddCircleIcon />}
-                >
-                    นำส่งอุปกรณ์
-                </Button>
                 <Paper
                     sx={{
                         width: '100%',
@@ -366,178 +300,6 @@ const Tracking = () => {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </Paper>
-                <Dialog maxWidth={'sm'} open={open} onClose={handleClose}>
-                    <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
-                        <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', color: '#fff' }}>
-                            แบบฟอร์มการนำส่งอุปกรณ์-เครื่องมือการแพทย์
-                        </Typography>
-                    </DialogTitle>
-                    <DialogContent sx={{ marginTop: 3 }}>
-                        {activeStep === 0 && (
-                            <form onSubmit={handleSubmit}>
-                                <Typography variant="h3" sx={{ fontWeight: 500 }}>
-                                    ชื่ออุปกรณ์ - เครื่องมือการแพทย์
-                                </Typography>
-                                <Select
-                                    labelId="quantity-label"
-                                    id="name"
-                                    name="name"
-                                    fullWidth
-                                    value={selectedEquipment}
-                                    onChange={handleEquipmentChange}
-                                    variant="outlined"
-                                    sx={{ marginTop: '20px', marginBottom: '10px' }}
-                                >
-                                    <MenuItem value="ชุดทำแผล A">ชุดทำแผล A</MenuItem>
-                                    <MenuItem value="ชุดทำแผล B">ชุดทำแผล B</MenuItem>
-                                    <MenuItem value="ชุดทำแผล C">ชุดทำแผล C</MenuItem>
-                                    <MenuItem value="ชุดทำฟัน A">ชุดทำฟัน A</MenuItem>
-                                    <MenuItem value="ชุดทำฟัน B">ชุดทำฟัน B</MenuItem>
-                                </Select>
-                                <Typography variant="h3" sx={{ fontWeight: 500 }}>
-                                    จำนวนที่ต้องการส่ง
-                                </Typography>
-                                <TextField
-                                    margin="dense"
-                                    id="quantity"
-                                    name="quantity"
-                                    type="number"
-                                    fullWidth
-                                    placeholder="กรุณาระบุจำนวน"
-                                    variant="outlined"
-                                    sx={{ marginTop: '20px', marginBottom: '10px' }}
-                                />
-                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button
-                                        variant="outlined"
-                                        color="success"
-                                        type="submit"
-                                        style={{ fontSize: '16px', borderRadius: 100 }}
-                                    >
-                                        เพิ่มรายการ
-                                    </Button>
-                                </Box>
-                                {equipment.length > 0 ? (
-                                    <>
-                                        <div
-                                            className="header-show-detail"
-                                            style={{ backgroundColor: '#086c3c', padding: '15px', borderRadius: 100 }}
-                                        >
-                                            <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
-                                                รายการทั้งหมด
-                                            </Typography>
-                                        </div>
-                                        {equipment.map((item, key) => (
-                                            <li key={key} style={{ listStyle: 'none', marginTop: 20 }}>
-                                                <Grid container>
-                                                    <Grid item xs={1} style={{ fontSize: '16px' }}>
-                                                        {key + 1}.
-                                                    </Grid>
-                                                    <Grid item xs={5} style={{ fontSize: '16px' }}>
-                                                        {item.name}
-                                                    </Grid>
-                                                    <Grid item xs={4} style={{ fontSize: '16px' }}>
-                                                        จำนวน: {item.quantity}
-                                                    </Grid>
-                                                    <Grid item xs={2}>
-                                                        <IconButton onClick={() => handleDeleteEquipment(key)} color="error" size="small">
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </Grid>
-                                                </Grid>
-                                            </li>
-                                        ))}
-                                    </>
-                                ) : (
-                                    ''
-                                )}
-                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleClose}>
-                                        ย้อนกลับ
-                                    </Button>
-                                    {equipment.length > 0 ? (
-                                        <Button
-                                            type="submit"
-                                            variant="outlined"
-                                            color="success"
-                                            sx={{ marginLeft: 3, borderRadius: 100 }}
-                                            onClick={handleNext}
-                                        >
-                                            ต่อไป
-                                        </Button>
-                                    ) : (
-                                        ''
-                                    )}
-                                </Box>
-                            </form>
-                        )}
-                        {activeStep === 1 && (
-                            <>
-                                <Typography
-                                    variant="h3"
-                                    sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px' }}
-                                >
-                                    รายการทั้งหมด
-                                </Typography>
-                                {equipment.map((item, key) => (
-                                    <li style={{ fontSize: '16px', marginTop: '10px', listStyle: 'none' }} key={key}>
-                                        <Grid container>
-                                            <Grid item xs={1} style={{ fontSize: '16px' }}>
-                                                {key + 1}.
-                                            </Grid>
-                                            <Grid item xs={5} style={{ fontSize: '16px' }}>
-                                                {item.name}
-                                            </Grid>
-                                            <Grid item xs={4} style={{ fontSize: '16px' }}>
-                                                จำนวน: {item.quantity}
-                                            </Grid>
-                                        </Grid>
-                                    </li>
-                                ))}
-                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleBack}>
-                                        ย้อนกลับ
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        color="success"
-                                        sx={{ marginLeft: 3, borderRadius: 100 }}
-                                        onClick={handleNext}
-                                    >
-                                        ต่อไป
-                                    </Button>
-                                </Box>
-                            </>
-                        )}
-                        {activeStep === 2 && (
-                            <>
-                                <Box textAlign="center">
-                                    <ErrorIcon sx={{ color: '#ff0c34', fontSize: 180 }} />
-                                </Box>
-
-                                <Typography
-                                    variant="h3"
-                                    sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#ff0c34' }}
-                                >
-                                    ยืนยันการส่งข้อมูล
-                                </Typography>
-                                <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleBack}>
-                                        ย้อนกลับ
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        color="success"
-                                        sx={{ marginLeft: 3, borderRadius: 100 }}
-                                        onClick={handleSaveForm}
-                                    >
-                                        ยืนยัน
-                                    </Button>
-                                </Box>
-                            </>
-                        )}
-                    </DialogContent>
-                </Dialog>
 
                 <Dialog
                     fullWidth={true}
@@ -717,4 +479,4 @@ const Tracking = () => {
     );
 };
 
-export default Tracking;
+export default TrackingProcess;

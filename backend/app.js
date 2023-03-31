@@ -89,6 +89,23 @@ app.get("/tracking/:id", jsonParser, (req, res) => {
   );
 });
 
+app.get("/tracking/:id/:status", jsonParser, (req, res) => {
+  const id = [req.params["id"]];
+  const status = [req.params["status"]]; //สถานะ
+
+  connection.query(
+    "SELECT * FROM tracking WHERE user_id = ? AND tracking_status = ?",
+    [id, status],
+    function (err, results) {
+      if (err) {
+        res.json({ status: "error", message: err });
+        return;
+      }
+      res.json({ status: "ok", data: results });
+    }
+  );
+});
+
 // สำหรับเช็คตอนกดดวงตา detail
 app.get("/tracking-data/:id", jsonParser, (req, res) => {
   const id = [req.params["id"]];
@@ -440,6 +457,68 @@ app.get("/document-chart-process/:id", jsonParser, (req, res) => {
         if (count === month) {
           res.json({ status: "ok", data: resultsArray });
         }
+      }
+    );
+  }
+});
+
+app.get("/document-chart-manager/:id/:role/:status", jsonParser, (req, res) => {
+  const id = [req.params["id"]]; // โรงพยาบาล
+  const role = parseInt(req.params["role"]);
+  const status = parseInt(req.params["status"]);
+  const month = 12;
+  const year = new Date().getFullYear();
+  let resultsArray = [];
+  let count = 0;
+  for (let i = 1; i <= month; i++) {
+    connection.query(
+      "SELECT COUNT(document_code) FROM approval WHERE MONTH(created_at) = ? AND YEAR(created_at) = ? AND approval_hospital = ? AND approval_status = ? AND approver_id = ?",
+      [i, year, id, status, role],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        resultsArray.push({
+          month: i,
+          count: results[0]["COUNT(document_code)"],
+        });
+        count++;
+        if (count === month) {
+          res.json({ status: "ok", data: resultsArray });
+        }
+      }
+    );
+  }
+});
+
+app.get("/document-card-manager/:id/:role/:status", jsonParser, (req, res) => {
+  const id = [req.params["id"]]; // โรงพยาบาล
+  const role = parseInt(req.params["role"]);
+  const status = parseInt(req.params["status"]);
+  if (status != 0) {
+    connection.query(
+      "SELECT COUNT(document_code) as COUNT FROM approval WHERE approval_hospital = ? AND approval_status = ? AND approver_id = ?",
+      [id, status, role],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        res.json({ status: "ok", data: results });
+      }
+    );
+  } else {
+    let newStatus = role - 1;
+    connection.query(
+      "SELECT COUNT(*) as COUNT FROM document WHERE hospital_id = ? AND document_status = ?",
+      [id, newStatus],
+      function (err, results) {
+        if (err) {
+          res.json({ status: "error", message: err });
+          return;
+        }
+        return res.json({ status: "ok", data: results });
       }
     );
   }
