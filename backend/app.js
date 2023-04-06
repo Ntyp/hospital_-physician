@@ -267,7 +267,9 @@ app.put("/tracking/:id", jsonParser, (req, res) => {
           }
           // ส่งNotification แจ้งเตือนว่านัดรับวันนี้นะ
           const created_at = moment().format("YYYY-MM-DD HH:mm:ss");
-          const title_notification = `รับอุปกรณ์ฆ่าเชื้อสำเร็จกรุณามารับอุปกรณ์ฆ่าเชื้อในวันที่ ${tracking_meet}`;
+          const title_notification = `รับอุปกรณ์ฆ่าเชื้อสำเร็จกรุณามารับอุปกรณ์ฆ่าเชื้อในวันที่ ${moment(
+            tracking_meet
+          ).format("DD-MM-YYYY")}`;
           const status_unread = 0;
           const role = 1;
           const hospital_id = results[0].hospital_id;
@@ -698,13 +700,12 @@ app.get("/documents-approve/:id/:role", jsonParser, (req, res) => {
   const hospital_id = [req.params["id"]];
   const approval_status = req.params["role"]; // role ของคนที่จะเช็ค
   const role = approval_status - 1; // role ของคนที่จะเช็ค
-  const status_approve = "อนุมัติ";
   const approve = 1;
-
+  // "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code WHERE document.hospital_id = ? AND approval.approval_status = ?",
   if (hospital_id != 17) {
     connection.query(
-      "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code WHERE document.hospital_id = ? AND approval.approval_status = ?",
-      [hospital_id, 1],
+      "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code INNER JOIN hospital ON approval.approval_hospital = hospital.hospital_id WHERE document.hospital_id = ? AND approval.approval_hospital = ? AND approval.approval_status = ?",
+      [hospital_id, hospital_id, 1],
       function (err, results) {
         if (err) {
           res.json({ status: "error", message: err });
@@ -715,14 +716,16 @@ app.get("/documents-approve/:id/:role", jsonParser, (req, res) => {
     );
   } else {
     connection.query(
-      "SELECT * FROM document  WHERE approve_" + role + "= ? ",
-      [approve],
+      "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code INNER JOIN hospital ON document.hospital_id = hospital.hospital_id  WHERE document.approve_" +
+        role +
+        " = ? AND approval.approver_id = ? AND approval.approval_status = ?",
+      [approve, approval_status, approve],
       function (err, results) {
         if (err) {
           res.json({ status: "error", message: err });
           return;
         }
-        res.json({ status: "ok", data: results });
+        return res.json({ status: "ok", data: results });
       }
     );
   }
@@ -735,9 +738,11 @@ app.get("/documents-disapprove/:id/:role", jsonParser, (req, res) => {
   const approval_status = req.params["role"]; // role ของคนที่จะเช็ค
   const status_disapprove = "ไม่อนุมัติ";
 
+  // "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code WHERE document.hospital_id = ? AND approval.approval_status = ?",
+
   if (hospital_id != 17) {
     connection.query(
-      "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code WHERE document.hospital_id = ? AND approval.approval_status = ?",
+      "SELECT * FROM document INNER JOIN approval ON document.document_code = approval.document_code INNER JOIN hospital ON approval.approval_hospital = hospital.hospital_id WHERE document.hospital_id = ? AND approval.approval_status = ?",
       [hospital_id, 2],
       function (err, results) {
         if (err) {
@@ -749,7 +754,7 @@ app.get("/documents-disapprove/:id/:role", jsonParser, (req, res) => {
     );
   } else {
     connection.query(
-      "SELECT * FROM approval INNER JOIN document ON approval.document_code = document.document_code  WHERE approver_id = ? AND approval_hospital = ? AND approval_status = ?",
+      "SELECT * FROM approval INNER JOIN document ON approval.document_code = document.document_code INNER JOIN hospital ON approval.approval_hospital  WHERE approver_id = ? AND approval_hospital = ? AND approval_status = ?",
       [approval_status, hospital_id, 2],
       function (err, results) {
         if (err) {

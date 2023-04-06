@@ -23,6 +23,7 @@ import {
     IconButton
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const DocumentsDisapprove = () => {
     const [user, setUser] = useState();
@@ -47,9 +48,19 @@ const DocumentsDisapprove = () => {
             .get(`http://localhost:7000/documents-disapprove/${id}/${role}`)
             .then((response) => {
                 const value = response.data.data;
+                console.log(value);
                 setRows(
                     value.map((item, index) =>
-                        createData(index + 1, item.created_at, item.document_title, item.created_by, item.approval_comments)
+                        createData(
+                            index + 1,
+                            item.created_at,
+                            item.document_title,
+                            item.created_by,
+                            item.hospital_name,
+                            item.document_detail,
+                            item.document_file_path,
+                            item.approval_comments
+                        )
                     )
                 );
             })
@@ -63,12 +74,26 @@ const DocumentsDisapprove = () => {
         { id: 'date', label: 'วันที่ส่ง', minWidth: 100 },
         { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
         { id: 'reporter', label: 'ผู้รายงาน', minWidth: 100 },
-        { id: 'detail', label: 'หมายเหตุ', minWidth: 100 }
+        { id: 'hospital', label: 'โรงพยาบาล', minWidth: 100 },
+        { id: 'detail', label: 'หมายเหตุ', minWidth: 100 },
+        {
+            id: 'file',
+            label: 'ไฟล์',
+            minWidth: 100,
+            render: (row) => (
+                <>
+                    <IconButton onClick={() => handleDownload(row.path)}>
+                        <DownloadIcon />
+                    </IconButton>
+                </>
+            )
+        },
+        { id: 'comment', label: 'ข้อเสนอแนะ', minWidth: 100 }
     ];
 
-    function createData(order, date, topic, reporter, detail) {
+    function createData(order, date, topic, reporter, hospital, detail, path, comment) {
         const formattedDate = moment(date).format('DD-MM-YYYY');
-        return { order, date: formattedDate, topic, reporter, detail };
+        return { order, date: formattedDate, topic, reporter, hospital, detail, path, comment };
     }
 
     const handleChangePage = (event, newPage) => {
@@ -94,6 +119,13 @@ const DocumentsDisapprove = () => {
     const handleClose = () => {
         setOpen(false);
     };
+
+    function handleDownload(path) {
+        const file_path = path;
+        const download_url = `http://localhost:7000/download-file?file_path=${file_path}`;
+        window.location.href = download_url;
+    }
+
     const filteredRows = rows.filter((row) => {
         return Object.values(row).some((value) => {
             return String(value).toLowerCase().includes(searchTerm.toLowerCase());

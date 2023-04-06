@@ -74,6 +74,7 @@ const DocumentsWaiting = () => {
                             item.document_title,
                             item.document_file,
                             item.created_by,
+                            item.hospital_id,
                             item.document_detail,
                             item.document_file_path
                         )
@@ -93,6 +94,7 @@ const DocumentsWaiting = () => {
         { id: 'topic', label: 'หัวข้อ', minWidth: 100 },
         { id: 'document', label: 'เอกสาร', minWidth: 100 },
         { id: 'reporter', label: 'ผู้รายงาน', minWidth: 100 },
+        { id: 'hospital', label: 'โรงพยาบาล', minWidth: 100 },
         { id: 'detail', label: 'หมายเหตุ', minWidth: 100 },
         {
             id: 'actions',
@@ -123,9 +125,9 @@ const DocumentsWaiting = () => {
         }
     ];
 
-    function createData(order, date, code, topic, document, reporter, detail, path) {
+    function createData(order, date, code, topic, document, reporter, hospital, detail, path) {
         const formattedDate = moment(date).format('DD-MM-YYYY');
-        return { order, date: formattedDate, code, topic, document, reporter, detail, path };
+        return { order, date: formattedDate, code, topic, document, reporter, hospital, detail, path };
     }
 
     const handleClickOpenApprove = (row) => {

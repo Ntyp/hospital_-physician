@@ -83,7 +83,7 @@ const Notification = () => {
             })
             .then(function (response) {
                 if (role == 1) {
-                    window.location.reload();
+                    window.location.href = 'http://localhost:3000/documents';
                 } else {
                     window.location.href = 'http://localhost:3000/report-documents';
                 }

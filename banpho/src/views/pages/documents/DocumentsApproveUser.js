@@ -413,7 +413,9 @@ const DocumentsApproveUser = () => {
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>รายละเอียด</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}></Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
+                                        {document?.document_detail}
+                                    </Typography>
                                 </Grid>
                             </Grid>
 
