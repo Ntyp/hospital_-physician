@@ -640,7 +640,7 @@ app.get("/documents-status/:id/:status", jsonParser, (req, res) => {
   const status = req.params["status"];
   if (hospital_id == 17) {
     connection.query(
-      "SELECT * FROM document WHERE document_status = ?",
+      "SELECT * FROM document INNER JOIN hospital ON hospital.hospital_id = document.hospital_id WHERE document.document_status = ?",
       [status],
       function (err, results) {
         if (err) {
@@ -652,7 +652,7 @@ app.get("/documents-status/:id/:status", jsonParser, (req, res) => {
     );
   } else {
     connection.query(
-      "SELECT * FROM document WHERE hospital_id = ? AND document_status = ?",
+      "SELECT * FROM document INNER JOIN hospital ON hospital.hospital_id = document.hospital_id WHERE document.hospital_id = ? AND document.document_status = ?",
       [hospital_id, status],
       function (err, results) {
         if (err) {

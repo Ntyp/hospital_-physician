@@ -74,7 +74,7 @@ const DocumentsWaiting = () => {
                             item.document_title,
                             item.document_file,
                             item.created_by,
-                            item.hospital_id,
+                            item.hospital_name,
                             item.document_detail,
                             item.document_file_path
                         )
