@@ -1,6 +1,6 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const mysql = require("mysql2");
+const bodyParser = require("body-parser"); // เก็บข้อมูลที่ส่งมาจากฝั่ง user
+const mysql = require("mysql2"); // My SQL
 const moment = require("moment");
 const iconv = require("iconv-lite");
 const { Buffer } = require("buffer");
@@ -11,7 +11,7 @@ const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const fileUpload = require("express-fileupload");
 const fs = require("fs");
-const jsonParser = bodyParser.json();
+const jsonParser = bodyParser.json(); // แปลงค่า
 const port = 7000;
 
 const connection = mysql.createConnection({
@@ -94,7 +94,7 @@ app.get("/tracking/:id/:status", jsonParser, (req, res) => {
   const status = [req.params["status"]]; //สถานะ
 
   connection.query(
-    "SELECT * FROM tracking WHERE user_id = ? AND tracking_status = ?",
+    "SELECT * FROM tracking WHERE hospital_id = ? AND tracking_status = ?",
     [id, status],
     function (err, results) {
       if (err) {
@@ -125,7 +125,7 @@ app.get("/tracking-data/:id", jsonParser, (req, res) => {
 
 // เช็คอุปกรณ์ที่อยู่ใน group ว่ามีอะไรบ้าง
 app.get("/tracking-item/:id", jsonParser, (req, res) => {
-  const id = [req.params["id"]]; // group_id
+  const id = [req.params["id"]]; // group_id // id track
 
   connection.query(
     "SELECT * FROM equipment WHERE group_id = ?",
@@ -349,6 +349,8 @@ app.get("/tracking-chart/:id", jsonParser, (req, res) => {
   const year = new Date().getFullYear();
   let resultsArray = [];
   let count = 0;
+  // Loop ค่าของแต่ละเดือนเพื่อเอามาใส่ในกราฟ
+  // โดยLoop เพื่อเอามาเช็คตั้งแต่เดือนแรก
   for (let i = 1; i <= month; i++) {
     connection.query(
       "SELECT COUNT(tracking_id) FROM tracking WHERE MONTH(date_at) = ? AND YEAR(date_at) = ? AND hospital_id = ? AND tracking_status = ?",
@@ -843,6 +845,7 @@ app.post("/disapprove/:id", jsonParser, (req, res) => {
   const comment = req.body.comment;
   const hospital = req.body.hospital;
   const approver = req.body.approver; //ผู้อนุมัติ
+  const hospital_owner = req.body.hospital_owner;
   const status = 2; // ไม่อนุมัติ
   const update_status = 0; // ปรับเป็นสถานะต้องแก้ไข
   const created_at = moment().format("YYYY-MM-DD hh:mm:ss");
@@ -881,6 +884,7 @@ app.post("/disapprove/:id", jsonParser, (req, res) => {
               const title_notification =
                 "มีการเอกสารที่ไม่ผ่านการอนุมัติ กรุณายื่นเรื่องมาใหม่อีกครั้ง";
               const user_role = 1;
+              // ต้องมีการส่ง hospital ของเอกสาร
               connection.query(
                 "INSERT INTO notification (notification_date,notification_detail,notification_status,notification_role,notification_place) VALUES (?,?,?,?,?)",
                 [
@@ -888,7 +892,7 @@ app.post("/disapprove/:id", jsonParser, (req, res) => {
                   title_notification,
                   status_unread,
                   user_role,
-                  hospital,
+                  hospital_owner,
                 ],
                 function (err, results) {
                   if (err) {

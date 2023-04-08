@@ -1,20 +1,5 @@
 import React, { useState } from 'react';
-import {
-    Avatar,
-    Button,
-    CssBaseline,
-    TextField,
-    FormControlLabel,
-    Checkbox,
-    Paper,
-    Box,
-    Grid,
-    Typography,
-    createTheme,
-    ThemeProvider,
-    makeStyles,
-    Alert
-} from '@mui/material';
+import { Button, CssBaseline, TextField, Paper, Box, Grid, Typography, createTheme, ThemeProvider, makeStyles, Alert } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -42,9 +27,10 @@ const Login = () => {
                 const value = response.data;
                 if (value.status == 'ok') {
                     console.log('value', value);
+                    // Set localStorage เพื่อเอาไว้ใช้ในหลายๆหน้า
                     localStorage.setItem('user_data', JSON.stringify(value.data[0]));
+                    // Check permission
                     if (value.data[0].user_role == 'hospital staff') {
-                        // navigate('/home');
                         window.location.href = 'http://localhost:3000/home';
                     } else {
                         window.location.href = 'http://localhost:3000/dashboard-documents';
@@ -61,6 +47,7 @@ const Login = () => {
         <ThemeProvider styles={styles}>
             <Grid container component="main" sx={{ height: '100vh' }}>
                 <CssBaseline />
+                {/* Bg Docter */}
                 <Grid
                     item
                     xs={false}
@@ -89,6 +76,7 @@ const Login = () => {
                             ระบบสนับสนุนการปฏิบัติงาน <br /> สำนักงานสาธารณสุขอำเภอบ้านโพธิ์ จังหวัดฉะเชิงเทรา
                         </Typography>
                         <Box noValidate sx={{ mt: 1 }}>
+                            {/* Onsubmit จะทำงานเมื่อกด button type submit  */}
                             <form onSubmit={handleLogin}>
                                 <TextField
                                     margin="dense"
@@ -98,7 +86,8 @@ const Login = () => {
                                     type="text"
                                     fullWidth
                                     variant="outlined"
-                                    color="success"
+                                    color="success" // success = green, danger = red,primary = blue
+                                    // https://getbootstrap.com/docs/4.0/utilities/colors/
                                     required
                                     sx={{ mt: 1, mb: 2 }}
                                 />

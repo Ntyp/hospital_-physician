@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import moment from 'moment/moment';
-import { useNavigate } from 'react-router-dom';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import moment from 'moment/moment'; // จัดการวันเวลา
+import { useNavigate } from 'react-router-dom'; // ไว้ใช้คำสั่งเปลี่ยนหน้า
+import AddCircleIcon from '@mui/icons-material/AddCircle'; // ไอคอนธรรมดา
 import {
     Card,
-    Typography,
+    Typography, // Text
     Button,
-    Modal,
     Box,
     Paper,
     Table,
@@ -28,10 +27,9 @@ import {
     StepLabel,
     Grid,
     Select,
-    MenuItem,
-    InputAdornment
+    MenuItem
 } from '@mui/material';
-import axios from 'axios';
+import axios from 'axios'; // ตัว Call ระหว่าง API กับ Frontend
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
@@ -57,6 +55,7 @@ const Tracking = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
+    // useEffect มีหน้าที่สำหรับเเมื่อหน้านี้ทำงานจะให้ทำในส่วนอันนี้เลย
     useEffect(() => {
         const userData = localStorage.getItem('user_data');
         const storage = JSON.parse(userData);
@@ -65,14 +64,18 @@ const Tracking = () => {
         getData(storage);
     }, []);
 
+    // ดึงข้อมูลจาก API มาในรูปแบบ GET เพื่อเตรียมค่าลงในตาราง
     function getData(value) {
-        const id = value.user_id;
+        // const id = value.user_id;
+        //
+        const id = value.hospital_id;
         const status = 'จัดส่งอุปกรณ์และเครื่องมือ';
         axios
             .get(`http://localhost:7000/tracking/${id}/${status}`)
             .then((response) => {
                 const value = response.data.data;
                 console.log(value);
+                // นำค่าที่ได้จาก API มาเก็บที่ Row
                 setRows(
                     value.map((item, index) =>
                         createData(
@@ -131,7 +134,7 @@ const Tracking = () => {
 
     const handleQrcode = (row) => {
         console.log('row =>', row);
-        navigate('/tracking-qrcode', { state: { params: row.track } });
+        navigate('/tracking-qrcode', { state: { params: row.track } }); // /tracking-qrcode
     };
 
     // เซตหัวข้อ columns
@@ -151,7 +154,7 @@ const Tracking = () => {
                     <IconButton aria-label="check" onClick={() => handleCheck(row)}>
                         <VisibilityRoundedIcon />
                     </IconButton>
-                    <IconButton aria-label="check" onClick={() => handleQrcode(row)}>
+                    <IconButton aria-label="qrcode" onClick={() => handleQrcode(row)}>
                         <QrCode2Icon />
                     </IconButton>
                 </>
@@ -159,6 +162,7 @@ const Tracking = () => {
         }
     ];
 
+    // ชื่อสเต็ป
     const stepsTracking = [
         {
             label: 'จัดส่งอุปกรณ์และเครื่องมือ'
@@ -178,10 +182,12 @@ const Tracking = () => {
         return { order, date: formattedDate, track, sender, status, dateGet: formattedDateGet };
     }
 
+    // เปลี่ยนหน้า
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
 
+    // เซ็ตหน้าว่าอยู่หน้าไหน
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
         setPage(0);
@@ -196,6 +202,7 @@ const Tracking = () => {
         setOpen(false);
     };
 
+    // บันทึกฟอร์ม
     const handleSaveForm = () => {
         axios
             .post('http://localhost:7000/create-tracking', {
@@ -209,7 +216,7 @@ const Tracking = () => {
                 place: user.user_place
             })
             .then(function (response) {
-                console.log(response);
+                console.log(response); // print
                 const value = response.data;
                 if (value.status == 'ok') {
                     getData(user);
@@ -224,6 +231,7 @@ const Tracking = () => {
         setEquipment([]);
     };
 
+    // บันทึกอุปกรณ์ที่ถูกเลือก
     const handleSubmit = (event) => {
         event.preventDefault(); // prevent form submission
         const name = selectedEquipment;
@@ -240,6 +248,7 @@ const Tracking = () => {
         }
     };
 
+    // ลบอุปกรณ์ที่ถูกเลือก
     const handleDeleteEquipment = (key) => {
         // Remove the item from the equipment array using its key value as the index
         setEquipment((prevEquipment) => prevEquipment.filter((item, index) => index !== key));
@@ -300,6 +309,7 @@ const Tracking = () => {
                 <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px' }}>
                     จัดส่งอุปกรณ์การแพทย์
                 </Typography>
+                {/* ช่องค้นหา */}
                 <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 3, marginTop: 3 }}>
                     <Typography sx={{ fontWeight: 500 }}>ค้นหา</Typography>
                     <TextField
@@ -312,6 +322,7 @@ const Tracking = () => {
                         sx={{ marginLeft: 3, width: '75%' }}
                     />
                 </Box>
+                {/* สร้างชุด Tracking */}
                 <Button
                     variant="outlined"
                     onClick={handleClickOpen}
@@ -331,10 +342,12 @@ const Tracking = () => {
                         padding: '30px'
                     }}
                 >
+                    {/* ตาราง */}
                     <TableContainer>
                         <Table>
                             <TableHead>
                                 <TableRow>
+                                    {/* เซตหัวข้อของตาราง */}
                                     {columns.map((column) => (
                                         <TableCell key={column.id} align="center" style={{ minWidth: column.minWidth }}>
                                             {column.label}
@@ -345,6 +358,7 @@ const Tracking = () => {
                             <TableBody>
                                 {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                                     <TableRow key={row.order}>
+                                        {/* นำค่าที่ได้จากการ GET ข้อมูลที่จะเอามาใส่ตารางนำมาใส่ */}
                                         {columns.map((column) => (
                                             <TableCell key={column.id} align="center">
                                                 {column.render ? column.render(row) : row[column.id]}
@@ -366,6 +380,7 @@ const Tracking = () => {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </Paper>
+                {/* const [open,setOpen] = useState(false) */}
                 <Dialog maxWidth={'sm'} open={open} onClose={handleClose}>
                     <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
                         <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', color: '#fff' }}>
@@ -427,6 +442,9 @@ const Tracking = () => {
                                                 รายการทั้งหมด
                                             </Typography>
                                         </div>
+                                        {/* {name:เครืองมือ1 quantity:4} */}
+                                        {/* {name:เครืองมือ2 quantity:4} */}
+                                        {/* {name:เครืองมือ3 quantity:4} */}
                                         {equipment.map((item, key) => (
                                             <li key={key} style={{ listStyle: 'none', marginTop: 20 }}>
                                                 <Grid container>
@@ -581,6 +599,7 @@ const Tracking = () => {
                                 <Grid item xs={9}>
                                     <Typography sx={{ fontSize: '16px', fontWeight: '500', color: '#000' }}>
                                         {moment(history.date_at).format('DD-MM-YYYY')}
+                                        {/* 08-04-2023 */}
                                     </Typography>
                                 </Grid>
                             </Grid>

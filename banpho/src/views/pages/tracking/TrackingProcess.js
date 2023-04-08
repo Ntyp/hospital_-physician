@@ -65,7 +65,7 @@ const TrackingProcess = () => {
     }, []);
 
     function getData(value) {
-        const id = value.user_id;
+        const id = value.hospital_id;
         const status = 'รับอุปกรณ์ฆ่าเชื้อเรียบร้อย';
         axios
             .get(`http://localhost:7000/tracking/${id}/${status}`)

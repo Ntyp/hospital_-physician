@@ -65,7 +65,7 @@ const TrackingSuccess = () => {
     }, []);
 
     function getData(value) {
-        const id = value.user_id;
+        const id = value.hospital_id;
         const status = 'เสร็จสิ้น';
         axios
             .get(`http://localhost:7000/tracking/${id}/${status}`)

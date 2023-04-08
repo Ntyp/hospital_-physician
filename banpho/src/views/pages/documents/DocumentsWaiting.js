@@ -141,6 +141,7 @@ const DocumentsWaiting = () => {
     };
 
     const handleClickOpenDisapprove = (row) => {
+        console.log(row);
         setDocument(row);
         setOpenDisapprove(true);
     };
@@ -178,6 +179,7 @@ const DocumentsWaiting = () => {
                 role: user.role_status,
                 comment: comment,
                 hospital: user.hospital_id,
+                hospital_owner: document?.hospital,
                 approver: user.user_firstname + ' ' + user.user_lastname
             })
             .then(function (response) {

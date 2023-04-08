@@ -463,7 +463,7 @@ const Documents = () => {
                 </Box>
                 <Button
                     variant="outlined"
-                    onClick={handleClickOpen}
+                    onClick={handleClickOpen} // setOpen(true)
                     sx={{ float: 'right', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
                     color="success"
                     startIcon={<AddCircleIcon />}
