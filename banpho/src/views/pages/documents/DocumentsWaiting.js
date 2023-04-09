@@ -27,6 +27,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import UnpublishedRoundedIcon from '@mui/icons-material/UnpublishedRounded';
 import DownloadIcon from '@mui/icons-material/Download';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const DocumentsWaiting = () => {
     const [user, setUser] = useState();
@@ -197,7 +198,7 @@ const DocumentsWaiting = () => {
 
     const handleApprove = (event) => {
         event.preventDefault(); // prevent form submission
-        const comment = event.target.form.comment.value;
+        const comment = null;
         const id = document.code;
 
         axios
@@ -298,15 +299,15 @@ const DocumentsWaiting = () => {
                 </Paper>
 
                 {/* Approve */}
-                <Dialog open={openApprove} fullWidth={true} maxWidth={'sm'} onClose={handleCloseApprove}>
-                    <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
+                <Dialog open={openApprove} fullWidth={true} maxWidth={'xs'} onClose={handleCloseApprove}>
+                    {/* <DialogTitle sx={{ backgroundColor: '#086c3c' }}>
                         <Typography variant="h3" sx={{ fontWeight: 500, textAlign: 'center', color: '#fff' }}>
                             อนุมัติเอกสาร
                         </Typography>
-                    </DialogTitle>
+                    </DialogTitle> */}
                     <form onSubmit={handleApprove}>
                         <DialogContent>
-                            <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
+                            {/* <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText>
                             <TextField
                                 margin="dense"
                                 id="comment"
@@ -317,14 +318,39 @@ const DocumentsWaiting = () => {
                                 rows={4}
                                 fullWidth
                                 variant="outlined"
-                            />
+                                disabled
+                            /> */}
+
+                            <Box textAlign="center">
+                                <ErrorIcon sx={{ color: '#086c3c', fontSize: 180 }} />
+                            </Box>
+
+                            <Typography
+                                variant="h3"
+                                sx={{ fontWeight: 500, textAlign: 'center', marginTop: '20px', marginBottom: '20px', color: '#086c3c' }}
+                            >
+                                อนุมัติเอกสาร
+                            </Typography>
+                            <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
+                                <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleCloseApprove}>
+                                    ย้อนกลับ
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="success"
+                                    sx={{ marginLeft: 3, borderRadius: 100 }}
+                                    onClick={handleApprove}
+                                >
+                                    ยืนยัน
+                                </Button>
+                            </Box>
                         </DialogContent>
-                        <DialogActions>
+                        {/* <DialogActions>
                             <Button onClick={handleCloseApprove}>ยกเลิก</Button>
                             <Button onClick={handleApprove} type="submit">
                                 ยืนยัน
                             </Button>
-                        </DialogActions>
+                        </DialogActions> */}
                     </form>
                 </Dialog>
 
@@ -337,7 +363,6 @@ const DocumentsWaiting = () => {
                     </DialogTitle>
                     <form onSubmit={handleDisapprove}>
                         <DialogContent>
-                            {/* <DialogContentText sx={{ marginBottom: '20px' }}>ข้อเสนอของคุณ</DialogContentText> */}
                             <Typography sx={{ fontSize: '18px' }}>ข้อเสนอของคุณ</Typography>
                             <TextField
                                 margin="dense"

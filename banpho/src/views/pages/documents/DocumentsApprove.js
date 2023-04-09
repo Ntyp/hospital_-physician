@@ -55,8 +55,7 @@ const DocumentsApprove = () => {
                             item.created_by,
                             item.hospital_name,
                             item.document_detail,
-                            item.document_file_path,
-                            item.approval_comments
+                            item.document_file_path
                         )
                     )
                 );
@@ -84,13 +83,12 @@ const DocumentsApprove = () => {
                     </IconButton>
                 </>
             )
-        },
-        { id: 'comment', label: 'ข้อเสนอแนะ', minWidth: 100 }
+        }
     ];
 
-    function createData(order, date, topic, reporter, hospital, detail, path, comment) {
+    function createData(order, date, topic, reporter, hospital, detail, path) {
         const formattedDate = moment(date).format('DD-MM-YYYY');
-        return { order, date: formattedDate, topic, reporter, hospital, detail, path, comment };
+        return { order, date: formattedDate, topic, reporter, hospital, detail, path };
     }
 
     const handleChangePage = (event, newPage) => {
