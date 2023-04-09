@@ -101,6 +101,7 @@ const Users = () => {
 
     // Edit
     const handleOpenEdit = (row) => {
+        console.log(row);
         setId(row.id);
         setOpenEdit(true);
     };
@@ -109,7 +110,6 @@ const Users = () => {
         setOpenEdit(false);
     };
     const handleSubmitEdit = (event) => {
-        const id = id;
         event.preventDefault();
         const firstname = event.target.elements.firstname.value;
         const lastname = event.target.elements.lastname.value;
@@ -117,7 +117,7 @@ const Users = () => {
         const hospital_id = event.target.elements.hospital.value;
         axios
             .put(`http://localhost:7000/user/${id}`, {
-                firtstname: firstname,
+                firstname: firstname,
                 lastname: lastname,
                 role: role_status,
                 hospital: hospital_id
@@ -143,10 +143,10 @@ const Users = () => {
     };
 
     const handleSubmitDelete = () => {
-        const id = id;
         axios
             .delete(`http://localhost:7000/users/${id}`)
             .then((response) => {
+                getData();
                 setOpenDelete(false);
             })
             .catch((error) => {
@@ -367,7 +367,7 @@ const Users = () => {
                                     ยกเลิก
                                 </Button>
                                 <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} type="submit">
-                                    ต่อไป
+                                    ยืนยัน
                                 </Button>
                             </Box>
                         </form>
@@ -386,12 +386,12 @@ const Users = () => {
             >
                 <DialogTitle id="alert-dialog-title" sx={{ backgroundColor: '#086c3c' }}>
                     <Typography variant="h3" sx={{ fontWeight: 500, color: '#fff' }}>
-                        เพิ่มสมาชิก
+                        แก้ไขสมาชิก
                     </Typography>
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmitEdit}>
                             <Grid container sx={{ marginTop: 5 }}>
                                 <Grid xs={3} sx={{ alignSelf: 'center' }}>
                                     <Typography sx={{ fontSize: '18px' }}>ชื่อ</Typography>
@@ -445,7 +445,7 @@ const Users = () => {
                                     ยกเลิก
                                 </Button>
                                 <Button variant="outlined" color="success" sx={{ marginLeft: 3 }} type="submit">
-                                    ต่อไป
+                                    ยืนยัน
                                 </Button>
                             </Box>
                         </form>

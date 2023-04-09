@@ -32,6 +32,8 @@ const Login = () => {
                     // Check permission
                     if (value.data[0].user_role == 'hospital staff') {
                         window.location.href = 'http://localhost:3000/home';
+                    } else if (value.data[0].user_role == 'admin') {
+                        window.location.href = 'http://localhost:3000/';
                     } else {
                         window.location.href = 'http://localhost:3000/dashboard-documents';
                     }

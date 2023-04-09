@@ -130,6 +130,7 @@ const Hospital = () => {
             .then((response) => {
                 const value = response?.data.data[0];
                 console.log(value);
+                setHospital(value);
                 setOpenDelete(true);
             })
             .catch((error) => {

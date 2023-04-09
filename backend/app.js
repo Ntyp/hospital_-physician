@@ -1210,7 +1210,7 @@ app.put("/user/:id", jsonParser, (req, res) => {
           const user_role = results[0].role_name_en;
           // เจ้าหน้าที่ และ ผู้อำนวยการ โรงพยาบาล
           connection.query(
-            "UPDATE users SET user_firstname = ?,user_lastname = ?,user_position = ?,user_role = ?,user_status = ?,user_place = ?,hospital_id = ? WHERE user_id = ?",
+            "UPDATE users SET user_firstname = ?,user_lastname = ?,user_position = ?,user_role = ?,role_status = ?,user_place = ?,hospital_id = ? WHERE user_id = ?",
             [
               firstname,
               lastname,
