@@ -248,6 +248,11 @@ app.put("/tracking/:id", jsonParser, (req, res) => {
   const id = [req.params["id"]]; // group_id ที่ส่งไป
   const tracking_recipient = req.body.recipient;
   const tracking_meet = req.body.date; // วันนัดรับ
+  const date_now = moment().format("YYYY-MM-DD");
+  // เช็ค date ห้ามย้อนหลัง
+  if (moment(tracking_meet).isAfter(date_now) != true) {
+    return res.json({ status: "error", message: "Time < now" });
+  }
   connection.query(
     "UPDATE tracking SET tracking_recipient = ?, tracking_meet_date = ?,tracking_status = ? WHERE group_id = ?",
     [tracking_recipient, tracking_meet, "รับอุปกรณ์ฆ่าเชื้อเรียบร้อย", id],

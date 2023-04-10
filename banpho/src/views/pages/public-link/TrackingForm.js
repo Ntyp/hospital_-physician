@@ -39,6 +39,7 @@ const TrackingForm = () => {
     const [openConfirm, setOpenConfirm] = useState(false);
     const [openPickup, setOpenPickup] = useState(false);
     const [status, setStatus] = useState();
+    const [checkDate, setCheckDate] = useState(false);
     const navigate = useNavigate();
     const [meetDate, setMeetDate] = useState();
     useEffect(() => {
@@ -101,6 +102,7 @@ const TrackingForm = () => {
     };
 
     const handleClose = () => {
+        setCheckDate(false);
         setOpenConfirm(false);
     };
 
@@ -111,9 +113,13 @@ const TrackingForm = () => {
                 date: date
             })
             .then(function (response) {
-                setOpenConfirm(false);
-                window.open('about:blank', '_self');
-                window.close();
+                if (response.data.status == 'error') {
+                    setCheckDate(true);
+                } else {
+                    setOpenConfirm(false);
+                    window.open('about:blank', '_self');
+                    window.close();
+                }
             })
             .catch(function (error) {
                 console.log(error);
@@ -199,6 +205,11 @@ const TrackingForm = () => {
                         >
                             ยืนยันการรับอุปกรณ์
                         </Typography>
+                        {checkDate ? (
+                            <Typography sx={{ color: 'red', textAlign: 'center' }}>
+                                กรุณาตรวจสอบวันที่เนื่องจากวันที่ที่ระบุไม่ถูกต้อง
+                            </Typography>
+                        ) : null}
                         <Box textAlign="center" sx={{ marginTop: '20px', marginBottom: '20px' }}>
                             <Button variant="outlined" color="error" sx={{ borderRadius: 100 }} onClick={handleClose}>
                                 ย้อนกลับ
