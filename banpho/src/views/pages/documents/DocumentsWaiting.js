@@ -76,6 +76,7 @@ const DocumentsWaiting = () => {
                             item.document_file,
                             item.created_by,
                             item.hospital_name,
+                            item.hospital_id,
                             item.document_detail,
                             item.document_file_path
                         )
@@ -126,9 +127,9 @@ const DocumentsWaiting = () => {
         }
     ];
 
-    function createData(order, date, code, topic, document, reporter, hospital, detail, path) {
+    function createData(order, date, code, topic, document, reporter, hospital, hospitalId, detail, path) {
         const formattedDate = moment(date).format('DD-MM-YYYY');
-        return { order, date: formattedDate, code, topic, document, reporter, hospital, detail, path };
+        return { order, date: formattedDate, code, topic, document, reporter, hospital, hospitalId, detail, path };
     }
 
     const handleClickOpenApprove = (row) => {
@@ -174,13 +175,14 @@ const DocumentsWaiting = () => {
         const comment = event.target.form.comment.value;
         const id = document.code;
         console.log(id);
+        console.log(document.hospital);
 
         axios
             .post(`http://localhost:7000/disapprove/${id}`, {
                 role: user.role_status,
                 comment: comment,
                 hospital: user.hospital_id,
-                hospital_owner: document?.hospital,
+                hospital_owner: document?.hospitalId,
                 approver: user.user_firstname + ' ' + user.user_lastname
             })
             .then(function (response) {
@@ -198,13 +200,11 @@ const DocumentsWaiting = () => {
 
     const handleApprove = (event) => {
         event.preventDefault(); // prevent form submission
-        const comment = null;
         const id = document.code;
-
         axios
             .post(`http://localhost:7000/approve/${id}`, {
                 role: user.role_status,
-                comment: comment,
+                comment: null,
                 hospital: user.hospital_id,
                 approver: user.user_firstname + ' ' + user.user_lastname
             })
