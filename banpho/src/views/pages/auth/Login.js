@@ -13,6 +13,7 @@ const styles = {
 const theme = createTheme();
 
 const Login = () => {
+    const [checkLogin, setCheckLogin] = useState(false);
     const navigate = useNavigate();
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -26,6 +27,7 @@ const Login = () => {
             .then(function (response) {
                 const value = response.data;
                 if (value.status == 'ok') {
+                    setCheckLogin(false);
                     console.log('value', value);
                     // Set localStorage เพื่อเอาไว้ใช้ในหลายๆหน้า
                     localStorage.setItem('user_data', JSON.stringify(value.data[0]));
@@ -38,6 +40,7 @@ const Login = () => {
                         window.location.href = 'http://localhost:3000/dashboard-documents';
                     }
                 } else {
+                    setCheckLogin(true);
                     console.log('error');
                 }
             })
@@ -105,6 +108,7 @@ const Login = () => {
                                     required
                                     sx={{ mt: 2, mb: 2 }}
                                 />
+
                                 <Button
                                     type="submit"
                                     fullWidth
@@ -121,6 +125,9 @@ const Login = () => {
                                     เข้าสู่ระบบ
                                 </Button>
                             </form>
+                            {checkLogin ? (
+                                <Typography sx={{ textAlign: 'center', color: 'red' }}>กรุณาตรวจสอบไอดีและรหัสผ่านอีกครั้ง</Typography>
+                            ) : null}
                         </Box>
                     </Box>
                 </Grid>

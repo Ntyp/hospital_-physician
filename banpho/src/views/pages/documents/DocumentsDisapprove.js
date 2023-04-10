@@ -161,13 +161,6 @@ const DocumentsDisapprove = () => {
                         padding: '30px'
                     }}
                 >
-                    {/* <Button
-                        variant="contained"
-                        onClick={handleClickOpen}
-                        sx={{ float: 'left', marginRight: '20px', marginTop: '20px', marginBottom: '20px' }}
-                    >
-                        Export
-                    </Button> */}
                     <TableContainer>
                         <Table>
                             <TableHead>
