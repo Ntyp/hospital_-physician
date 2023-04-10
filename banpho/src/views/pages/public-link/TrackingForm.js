@@ -120,25 +120,6 @@ const TrackingForm = () => {
             });
     };
 
-    const handleAcceptPickup = () => {
-        axios
-            .put(`http://localhost:7000/tracking-date/${track}`, {
-                date: date
-            })
-            .then(function (response) {
-                console.log('response =>', response);
-                if (response.status == 'ok') {
-                    setOpenPickup(false);
-                    console.log('hello');
-                    window.open('about:blank', '_self');
-                    window.close();
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-    };
-
     return status == 'จัดส่งอุปกรณ์และเครื่องมือ' ? (
         <ThemeProvider theme={styles}>
             <Container component="main" maxWidth="xs">

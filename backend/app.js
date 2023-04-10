@@ -290,22 +290,6 @@ app.put("/tracking/:id", jsonParser, (req, res) => {
   );
 });
 
-app.put("/tracking-date/:id", jsonParser, (req, res) => {
-  const id = [req.params["id"]]; // group_id ที่ส่งไป
-  const tracking_meet = req.body.date; // วันนัดรับ
-  connection.query(
-    "UPDATE tracking SET tracking_meet_date = ?,tracking_status = ? WHERE group_id = ?",
-    [tracking_meet, "รับอุปกรณ์เรียบร้อย", id],
-    function (err, results) {
-      if (err) {
-        res.json({ status: "error", message: err });
-        return;
-      }
-      res.json({ status: "ok" });
-    }
-  );
-});
-
 // อัปเดตเมื่อได้รับสินค้ากลับ
 app.put("/tracking-back/:id", jsonParser, (req, res) => {
   const id = [req.params["id"]]; // group_id ที่ส่งไป
